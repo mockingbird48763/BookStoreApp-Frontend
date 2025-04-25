@@ -1,21 +1,36 @@
 import { createRouter, createWebHistory } from 'vue-router'
-import HomeView from '../views/HomeView.vue'
+import FrontLayout from '@/layouts/FrontLayout.vue'
+import BackLayout from '@/layouts/BackLayout.vue'
+import { RouteNames } from './const'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
   routes: [
     {
       path: '/',
-      name: 'home',
-      component: HomeView,
+      component: FrontLayout,
+      children: [
+        { path: '', component: () => import('@/views/front/HomeView.vue'), name: RouteNames.HOME },
+        {
+          path: 'books/:id',
+          component: () => import('@/views/front/BookDetailView.vue'),
+          name: RouteNames.BOOK_DETAIL,
+          // 這樣可以把 id，自動當作 props 傳進 component
+          props: true,
+        },
+      ],
     },
     {
-      path: '/about',
-      name: 'about',
-      // route level code-splitting
-      // this generates a separate chunk (About.[hash].js) for this route
-      // which is lazy-loaded when the route is visited.
-      component: () => import('../views/AboutView.vue'),
+      path: '/admin',
+      component: BackLayout,
+      meta: { requiresAdmin: true },
+      children: [
+        {
+          path: '',
+          component: () => import('@/views/back/DashBoardView.vue'),
+          name: RouteNames.DASH_BOARD,
+        },
+      ],
     },
   ],
 })
