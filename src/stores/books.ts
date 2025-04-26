@@ -1,5 +1,5 @@
-import { fetchBooks } from '@/api'
-import type { BookListResponse, BooksQueryParams, BookSummary } from '@/api/types'
+import { fetchBookById, fetchBooks } from '@/api'
+import type { BookDetail, BookListResponse, BooksQueryParams, BookSummary } from '@/api/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -12,6 +12,7 @@ export const useBookStore = defineStore('booksStore', () => {
     pageSize: 12,
     totalPages: 1,
   })
+  const bookDetail = ref<BookDetail>()
 
   const _updatePagination = (data: BookListResponse) => {
     pagination.value.totalCount = data.totalCount
@@ -48,11 +49,17 @@ export const useBookStore = defineStore('booksStore', () => {
     await getBooks({ page: 1 })
   }
 
+  const getBookDetail = async (id: string | number) => {
+    bookDetail.value = await fetchBookById(id)
+  }
+
   return {
     getBooks,
     books,
     pagination,
     setKeyword,
     resetBooks,
+    getBookDetail,
+    bookDetail,
   }
 })

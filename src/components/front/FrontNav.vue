@@ -1,10 +1,9 @@
 <template>
   <v-app-bar class="px-1">
-    <v-app-bar-nav-icon icon="mdi-home"></v-app-bar-nav-icon>
+    <v-app-bar-nav-icon icon="mdi-home" @click="goHome"></v-app-bar-nav-icon>
     <v-app-bar-title>BookStore</v-app-bar-title>
 
     <!-- search -->
-    <!-- 縱軸置中 -->
     <div class="d-flex align-center" style="flex: 1; justify-content: center">
       <v-text-field
         v-model="keyword"
@@ -56,12 +55,16 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
+
+const router = useRouter()
 
 const user = {
   initials: 'JD',
   fullName: 'John Doe',
   email: 'john.doe@doe.com',
 }
+
 const keyword = ref('')
 const emit = defineEmits<{
   search: [keyword: string]
@@ -77,5 +80,9 @@ const emitClear = () => {
     keyword.value = ''
     emit('clear')
   }
+}
+
+const goHome = () => {
+  router.push('/')
 }
 </script>

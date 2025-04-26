@@ -16,6 +16,7 @@ const searchStore = useSearchStore()
 const scrollToTop = () => window.scrollTo({ top: 0 })
 
 onMounted(async () => {
+  setKeyword(searchStore.keyword)
   await getBooks()
 })
 
@@ -28,9 +29,10 @@ const handlePageChange = async (newPage: number) => {
 watch(
   () => searchStore.keyword,
   async (keyword) => {
+    console.log('watch')
     currentPage.value = 1
     setKeyword(keyword)
-    await getBooks({ page: 1 })
+    await getBooks({ page: currentPage.value })
     scrollToTop()
   },
 )

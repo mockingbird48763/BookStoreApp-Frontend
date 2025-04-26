@@ -1,5 +1,5 @@
 <template>
-  <v-card class="mx-auto" max-width="300">
+  <v-card class="book-card mx-auto" max-width="300" :to="`/books/${props.book.id}`">
     <div class="position-relative">
       <v-img :src="`/images/${props.book.imagePath}`" height="400" class="rounded-t" cover />
 
@@ -59,7 +59,7 @@ const props = defineProps<{
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.4);
 }
 
-.v-card:hover {
+.book-card:hover {
   transform: scale(1.05);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition:

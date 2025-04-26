@@ -1,5 +1,5 @@
 import { http } from './http'
-import type { BookListResponse, BooksQueryParams } from './types'
+import type { BookDetail, BookListResponse, BooksQueryParams } from './types'
 
 // GET /books
 export function fetchBooks(params: BooksQueryParams = {}): Promise<BookListResponse> {
@@ -7,9 +7,11 @@ export function fetchBooks(params: BooksQueryParams = {}): Promise<BookListRespo
     params,
   })
 }
-export function fetchBook(id: string) {
-  return id
-} // GET /books/{id}
+
+// GET /books/{id}
+export function fetchBookById(id: number | string): Promise<BookDetail> {
+  return http.get(`/books/${id}`)
+}
 export function fetchCreateBook(data: BookPayload) {
   return data
 } // POST /books

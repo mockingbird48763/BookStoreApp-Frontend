@@ -42,3 +42,19 @@ export interface BookSummary {
   discount: number
   imagePath: string
 }
+
+export interface BookDetail {
+  id: number
+  isbn: string
+  title: string
+  description: string
+  listPrice: number
+  discount: number
+  stock: number
+  publicationDate: string
+  imagePath: string
+  authorId: number
+  authorName: string
+  publisherId: number
+  publisherName: string
+}

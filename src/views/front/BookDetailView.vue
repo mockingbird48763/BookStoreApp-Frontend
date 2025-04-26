@@ -1,63 +1,87 @@
 <template>
-  <template>
-    <v-container>
-      <v-row>
-        <v-col cols="12" md="4">
-          <!-- 書籍圖片 -->
-          <v-img :src="book.imagePath" alt="Book Image" height="200px" contain></v-img>
-        </v-col>
-        <v-col cols="12" md="8">
-          <!-- 書籍詳情 -->
-          <v-card>
-            <v-card-title>
-              <span class="headline">{{ book.title }}</span>
-            </v-card-title>
-            <v-card-subtitle>
-              <span class="caption">作者: {{ book.authorName }}</span>
-            </v-card-subtitle>
-            <v-card-text>
-              <p>{{ book.description }}</p>
-              <v-divider></v-divider>
-              <div>
-                定價: ${{ book.listPrice }}
-                <span v-if="book.discount > 0">折扣: {{ book.discount }}%</span>
-              </div>
-              <div>庫存: {{ book.stock }} 本</div>
-              <div>出版日期: {{ book.publicationDate }}</div>
-            </v-card-text>
-            <v-card-actions>
-              <v-btn color="primary" @click="orderBook">訂購</v-btn>
-            </v-card-actions>
+  <v-container class="py-8">
+    <template v-if="book">
+      <v-row align="center" justify="center">
+        <v-col cols="12" md="12" lg="9">
+          <v-card class="rounded-2xl elevation-3 overflow-hidden">
+            <v-row no-gutters>
+              <!-- 書籍圖片 -->
+              <v-col cols="12" md="5">
+                <v-img
+                  :src="`/images/${book.imagePath}`"
+                  alt="Book Image"
+                  height="100%"
+                  class="h-100 w-100 rounded-0"
+                  cover
+                />
+              </v-col>
+
+              <!-- 書籍詳情 -->
+              <v-col cols="12" md="7" class="pa-8 d-flex flex-column justify-space-between">
+                <div>
+                  <v-card-title class="text-h4 font-weight-bold mb-4">
+                    {{ book.title }}
+                  </v-card-title>
+
+                  <v-card-subtitle class="text-subtitle-2 mb-6 text-grey-darken-2">
+                    <span class="d-block mt-2">作者：{{ book.authorName }}<br /></span>
+                    <span class="d-block mt-2">出版社：{{ book.publisherName }}<br /></span>
+                    <span class="d-block mt-2">出版日期：{{ book.publicationDate }}</span>
+                  </v-card-subtitle>
+
+                  <v-card-text class="text-body-1 mb-6">
+                    {{ book.description }}
+                  </v-card-text>
+
+                  <v-divider class="my-4"></v-divider>
+
+                  <v-card-text class="text-body-1 mb-6">
+                    <div class="mb-2">
+                      <strong>定價：</strong>
+                      <span class="text-decoration-line-through">{{ book.listPrice }} 元</span>
+                    </div>
+                    <div class="mb-2">
+                      <strong class="display-1">優惠價：</strong>
+                      <span class="text-red-accent-3 font-weight-bold" style="font-size: 1.2rem">
+                        {{ Math.round(book.listPrice * (book.discount / 100)) }} 元
+                      </span>
+                    </div>
+                    <div class="mb-2"><strong>庫存：</strong> {{ book.stock }} 本</div>
+                  </v-card-text>
+                </div>
+
+                <v-card-actions class="mt-6 d-flex justify-end">
+                  <v-btn color="primary" variant="flat" rounded size="large" @click="orderBook">
+                    訂購
+                  </v-btn>
+                </v-card-actions>
+              </v-col>
+            </v-row>
           </v-card>
         </v-col>
       </v-row>
-    </v-container>
-  </template>
+    </template>
+    <template v-else>
+      <NoDataFound />
+    </template>
+  </v-container>
 </template>
-
 <script setup lang="ts">
-// route.id
-defineProps<{ id: string }>()
-const book = {
-  id: 1,
-  isbn: '978-1-234567-910',
-  title: '我不想改善程式效能',
-  description:
-    '本書介紹開放原始碼軟體的基本概念與優勢，並探討常見的開放原始碼工具，如 Git、Linux、Apache 等，適合對開放原始碼有興趣的讀者。',
-  listPrice: 0,
-  discount: 0,
-  stock: 0,
-  publicationDate: '0001-01-01',
-  imagePath: 'example/20000000_000000_0001.png',
-  authorId: 1,
-  authorName: '張天宇',
-  publisherId: 1,
-  publisherName: '智慧之光',
-}
-const orderBook = () => {
-  // 訂購邏輯暫時未實作
+import NoDataFound from '@/components/NoDataFound.vue'
+import { useBookStore } from '@/stores'
+import { computed, onMounted } from 'vue'
+
+const props = defineProps<{
+  id: string
+}>()
+const bookStore = useBookStore()
+const book = computed(() => bookStore.bookDetail)
+const orderBook = async () => {
   console.log('訂購按鈕被點擊')
 }
+onMounted(async () => {
+  await bookStore.getBookDetail(props.id)
+})
 </script>
 
 <style scoped></style>
