@@ -15,5 +15,30 @@ export interface LoginPayload {
 }
 
 export interface ErrorResponse {
-  errors: []
+  errors: string[]
+}
+
+export interface BooksQueryParams {
+  page?: number
+  pageSize?: number
+  authorId?: number
+  publisherId?: number
+  keyword?: string
+  includeInvisibleBooks?: boolean
+}
+
+export interface BookListResponse {
+  items: BookSummary[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface BookSummary {
+  id: number
+  title: string
+  listPrice: number
+  discount: number
+  imagePath: string
 }

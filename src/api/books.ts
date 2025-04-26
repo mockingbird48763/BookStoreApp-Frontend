@@ -1,4 +1,12 @@
-export function fetchBooks() {} // GET /books
+import { http } from './http'
+import type { BookListResponse, BooksQueryParams } from './types'
+
+// GET /books
+export function fetchBooks(params: BooksQueryParams = {}): Promise<BookListResponse> {
+  return http.get('/books', {
+    params,
+  })
+}
 export function fetchBook(id: string) {
   return id
 } // GET /books/{id}
