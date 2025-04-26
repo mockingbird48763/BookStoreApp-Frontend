@@ -3,9 +3,11 @@
     <v-app-bar-nav-icon icon="mdi-home"></v-app-bar-nav-icon>
     <v-app-bar-title>BookStore</v-app-bar-title>
 
+    <!-- search -->
     <!-- 縱軸置中 -->
     <div class="d-flex align-center" style="flex: 1; justify-content: center">
       <v-text-field
+        v-model="keyword"
         prepend-icon="mdi-magnify"
         density="compact"
         single-line
@@ -13,6 +15,10 @@
         flat
         variant="solo-filled"
         style="max-width: 800px; width: 100%"
+        placeholder="搜索關鍵字"
+        @keyup.enter="emitSearch"
+        clearable
+        @click:clear="emitClear"
       />
     </div>
 
@@ -49,9 +55,25 @@
 </template>
 
 <script setup lang="ts">
+import { ref } from 'vue'
+
 const user = {
   initials: 'JD',
   fullName: 'John Doe',
   email: 'john.doe@doe.com',
+}
+const keyword = ref('')
+const emit = defineEmits<{
+  search: [keyword: string]
+  clear: []
+}>()
+
+const emitSearch = () => {
+  emit('search', keyword.value)
+}
+
+const emitClear = () => {
+  keyword.value = ''
+  emit('clear')
 }
 </script>

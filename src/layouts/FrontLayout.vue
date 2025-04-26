@@ -1,5 +1,5 @@
 <template>
-  <FrontNav></FrontNav>
+  <FrontNav @search="handleSearch" @clear="handleClear"></FrontNav>
   <v-main>
     <v-container fluid>
       <v-row>
@@ -29,21 +29,36 @@ import { computed, onMounted, ref } from 'vue'
 import { useBookStore } from '@/stores'
 
 const bookStore = useBookStore()
+const { getBooks, setKeyword, resetBooks } = bookStore
 const books = computed(() => bookStore.books)
 const totalPages = computed(() => bookStore.pagination.totalPages)
 const currentPage = ref(bookStore.pagination.page)
 
+// 滾動到頁面頂部
+const scrollToTop = () => window.scrollTo({ top: 0 })
+
 onMounted(async () => {
-  await bookStore.getBooks()
+  await getBooks()
 })
 
 const handlePageChange = async (newPage: number) => {
-  currentPage.value = newPage
-  await bookStore.getBooks({ page: newPage })
-  // 滾動到頁面頂部
-  window.scrollTo({
-    top: 0,
-  })
+  // 底層自動幫忙改變 currentPage
+  await getBooks({ page: newPage })
+  scrollToTop()
+}
+
+const handleSearch = async (keyword: string) => {
+  if (!keyword.trim()) return
+  setKeyword(keyword)
+  currentPage.value = 1
+  await getBooks({ page: currentPage.value, keyword })
+  scrollToTop()
+}
+
+const handleClear = async () => {
+  currentPage.value = 1
+  await resetBooks()
+  scrollToTop()
 }
 </script>
 

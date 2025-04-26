@@ -5,6 +5,7 @@ import { ref } from 'vue'
 
 export const useBookStore = defineStore('booksStore', () => {
   const books = ref<BookSummary[]>([])
+  const _keyword = ref('')
   const pagination = ref({
     totalCount: 0,
     page: 1,
@@ -19,26 +20,39 @@ export const useBookStore = defineStore('booksStore', () => {
     pagination.value.totalPages = data.totalPages
   }
 
-  const getBooks = async (params: BooksQueryParams = {}) => {
-    const data: BookListResponse = await fetchBooks({
+  const getBooks = async (externalParams: BooksQueryParams = {}) => {
+    const queryParams: BooksQueryParams = {
       page: pagination.value.page,
       pageSize: pagination.value.pageSize,
-      ...params,
+    }
+
+    if (_keyword.value.trim()) {
+      queryParams.keyword = _keyword.value
+    }
+
+    const data: BookListResponse = await fetchBooks({
+      ...queryParams,
+      ...externalParams,
     })
 
     books.value = data.items
     _updatePagination(data)
   }
 
-  // const resetBooks = () => {
-  //   page.value = 1
-  //   keyword.value = ''
-  //   getBooks({ page: page.value, pageSize: pageSize.value })
-  // }
+  const setKeyword = (newKeyword: string) => {
+    _keyword.value = newKeyword
+  }
+
+  const resetBooks = async () => {
+    setKeyword('')
+    await getBooks({ page: 1 })
+  }
 
   return {
     getBooks,
     books,
     pagination,
+    setKeyword,
+    resetBooks,
   }
 })
