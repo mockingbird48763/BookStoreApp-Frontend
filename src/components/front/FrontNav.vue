@@ -73,7 +73,9 @@ const emitSearch = () => {
 }
 
 const emitClear = () => {
-  keyword.value = ''
-  emit('clear')
+  if (keyword.value !== '') {
+    keyword.value = ''
+    emit('clear')
+  }
 }
 </script>
