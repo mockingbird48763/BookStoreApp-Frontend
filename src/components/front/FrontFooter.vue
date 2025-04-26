@@ -20,6 +20,10 @@
       <v-col class="text-center mt-4" cols="12">
         <strong>版權聲明</strong>
       </v-col>
+      <v-col class="text-center mt-4" cols="12">
+        "no data" illustration by
+        <a href="https://www.freepik.com" target="_blank" rel="noopener">slidesgo / Freepik</a>
+      </v-col>
     </v-row>
   </v-footer>
 </template>

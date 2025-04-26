@@ -1,7 +1,7 @@
 <template>
   <FrontNav @search="handleSearch" @clear="handleClear"></FrontNav>
   <v-main>
-    <v-container fluid>
+    <v-container v-if="books && books.length" fluid>
       <v-row>
         <v-col v-for="book in books" :key="book.id" cols="12" sm="4" md="3" lg="2">
           <BookCard :book></BookCard>
@@ -17,6 +17,7 @@
         :total-visible="10"
       ></v-pagination>
     </v-container>
+    <NoDataFound v-else />
   </v-main>
   <FrontFooter></FrontFooter>
 </template>
@@ -25,6 +26,7 @@
 import FrontFooter from '@/components/front/FrontFooter.vue'
 import BookCard from '@/components/BookCard.vue'
 import FrontNav from '@/components/front/FrontNav.vue'
+import NoDataFound from '@/components/NoDataFound.vue'
 import { computed, onMounted, ref } from 'vue'
 import { useBookStore } from '@/stores'
 
