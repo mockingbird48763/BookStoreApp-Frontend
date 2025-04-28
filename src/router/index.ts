@@ -18,6 +18,32 @@ const router = createRouter({
           // 這樣可以把 id，自動當作 props 傳進 component
           props: true,
         },
+        {
+          path: 'cart',
+          component: () => import('@/views/front/CartView.vue'),
+          name: RouteNames.CART,
+        },
+        {
+          path: 'login',
+          component: () => import('@/views/front/LoginView.vue'),
+          name: RouteNames.LOGIN,
+        },
+        {
+          path: 'register',
+          component: () => import('@/views/front/RegisterView.vue'),
+          name: RouteNames.REGISTER,
+        },
+        {
+          path: 'orders',
+          component: () => import('@/views/front/OrdersView.vue'),
+          name: RouteNames.ORDERS,
+        },
+        {
+          path: 'orders/:id',
+          component: () => import('@/views/front/OrderDetailView.vue'),
+          name: RouteNames.ORDER_DETAIL,
+          props: true,
+        },
       ],
     },
     {

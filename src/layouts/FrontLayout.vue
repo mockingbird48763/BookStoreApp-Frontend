@@ -12,6 +12,7 @@ import FrontFooter from '@/components/front/FrontFooter.vue'
 import FrontNav from '@/components/front/FrontNav.vue'
 import { useSearchStore } from '@/stores'
 import { useRouter } from 'vue-router'
+import { RouteNames } from '@/router/const'
 
 const router = useRouter()
 const { setKeyword, getKeyword, clearKeyword } = useSearchStore()
@@ -21,16 +22,16 @@ const handleSearch = async (keyword: string) => {
   if (keyword === getKeyword()) return
   setKeyword(keyword)
   // 如果當前路徑不是 '/'，才跳轉回首頁
-  if (router.currentRoute.value.path !== '/') {
-    await router.push('/')
+  if (router.currentRoute.value.name !== RouteNames.HOME) {
+    await router.push({ name: RouteNames.HOME })
   }
 }
 
 const handleClear = async () => {
   clearKeyword()
   // 如果當前路徑不是 '/'，才跳轉回首頁
-  if (router.currentRoute.value.path !== '/') {
-    await router.push('/')
+  if (router.currentRoute.value.name !== RouteNames.HOME) {
+    await router.push({ name: RouteNames.HOME })
   }
 }
 </script>

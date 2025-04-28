@@ -58,3 +58,11 @@ export interface BookDetail {
   publisherId: number
   publisherName: string
 }
+
+export interface CartItemDetail {
+  id: number
+  title: string
+  unitPrice: number
+  stock: number
+  imagePath: string
+}

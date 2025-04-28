@@ -9,7 +9,7 @@
               <v-col cols="12" md="5">
                 <v-img
                   :src="`/images/${book.imagePath}`"
-                  alt="Book Image"
+                  :alt="book.title"
                   height="100%"
                   class="h-100 w-100 rounded-0"
                   cover
@@ -51,8 +51,13 @@
                 </div>
 
                 <v-card-actions class="mt-6 d-flex justify-end">
-                  <v-btn color="primary" variant="flat" rounded size="large" @click="orderBook">
-                    訂購
+                  <v-btn
+                    color="primary"
+                    size="large"
+                    variant="flat"
+                    @click="handleAddToCart(book.id)"
+                  >
+                    加入購物車
                   </v-btn>
                 </v-card-actions>
               </v-col>
@@ -70,14 +75,23 @@
 import NoDataFound from '@/components/NoDataFound.vue'
 import { useBookStore } from '@/stores'
 import { computed, onMounted } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
+import { useCartStore } from '@/stores'
 
 const props = defineProps<{
   id: string
 }>()
 const bookStore = useBookStore()
+const cartStore = useCartStore()
+const { addToCart } = cartStore
+const snackbar = useSnackbar()
 const book = computed(() => bookStore.bookDetail)
-const orderBook = async () => {
-  console.log('訂購按鈕被點擊')
+const handleAddToCart = async (id: number) => {
+  if (addToCart(id, 1)) {
+    snackbar.show('商品添加成功', 'success')
+  } else {
+    snackbar.show('商品已加入', 'warning')
+  }
 }
 onMounted(async () => {
   await bookStore.getBookDetail(props.id)
