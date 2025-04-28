@@ -1,7 +1,7 @@
-import { fetchBooksForCartById } from '@/api'
+import { fetchBooksForCartById, fetchCreateOrder } from '@/api'
 import { defineStore } from 'pinia'
 import { computed, reactive } from 'vue'
-import type { CartItemDetail } from '@/api/types'
+import type { CartItemDetail, CreateOrderPayload } from '@/api/types'
 
 export interface CartItem {
   id: number
@@ -11,6 +11,7 @@ export interface CartItem {
 export const useCartStore = defineStore('cartStore', () => {
   const cartItems = reactive<Record<number, CartItem>>({})
   const cartItemDetails = reactive<Record<number, CartItemDetail>>({})
+  const CART_ITEMS_KEY = 'cartItems' // 定義 storage key
 
   const addToCart = (id: number, quantity: number): boolean => {
     if (isInCart(id)) return false
@@ -24,11 +25,11 @@ export const useCartStore = defineStore('cartStore', () => {
   }
 
   const saveCartItems = (cartItems: Record<number, CartItem>) => {
-    localStorage.setItem('cartItems', JSON.stringify(cartItems))
+    localStorage.setItem(CART_ITEMS_KEY, JSON.stringify(cartItems))
   }
 
   const getCartItems = (): Record<number, CartItem> | null => {
-    const storedCartItems = localStorage.getItem('cartItems')
+    const storedCartItems = localStorage.getItem(CART_ITEMS_KEY)
     return storedCartItems ? JSON.parse(storedCartItems) : null
   }
 
@@ -37,6 +38,7 @@ export const useCartStore = defineStore('cartStore', () => {
     if (storedCartItems) {
       Object.assign(cartItems, storedCartItems)
       const ids = Object.keys(cartItems).map((id) => parseInt(id))
+      if (ids.length === 0) return
       const dataArray = await fetchBooksForCartById(ids)
       const data: Record<number, CartItemDetail> = Object.fromEntries(
         dataArray.map((item) => [item.id, item]),
@@ -73,6 +75,17 @@ export const useCartStore = defineStore('cartStore', () => {
     }, 0)
   })
 
+  const createOrder = async (payload: CreateOrderPayload) => {
+    await fetchCreateOrder(payload)
+  }
+
+  const clearCart = () => {
+    // 清空物件內容
+    Object.keys(cartItems).forEach((key) => delete cartItems[Number(key)])
+    Object.keys(cartItemDetails).forEach((key) => delete cartItemDetails[Number(key)])
+    localStorage.removeItem(CART_ITEMS_KEY)
+  }
+
   return {
     addToCart,
     cartItems,
@@ -83,5 +96,7 @@ export const useCartStore = defineStore('cartStore', () => {
     totalItems,
     totalQuantity,
     totalAmount,
+    createOrder,
+    clearCart,
   }
 })

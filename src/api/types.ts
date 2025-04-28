@@ -66,3 +66,11 @@ export interface CartItemDetail {
   stock: number
   imagePath: string
 }
+
+export interface CreateOrderPayload {
+  orderItems: { BookId: number; Quantity: number }[]
+  shippingAddress: string
+  paymentMethod: number
+  shippingMethod: number
+  shippingNote: string
+}
