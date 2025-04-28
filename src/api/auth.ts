@@ -1,14 +1,14 @@
 import { http } from './http'
-import { type ErrorResponse, type LoginPayload, type RegisterPayload } from './types'
+import { type LoginPayload, type RegisterPayload } from './types'
 
 export function fetchLogin(data: LoginPayload) {
-  return http.post<{ token: string }, ErrorResponse>('/auth/login', {
+  return http.post<{ token: string }>('/auth/login', {
     ...data,
   })
 }
 
-export function fetchRegister(data: RegisterPayload) {
-  return http.post<{ message: string }, ErrorResponse>('/auth/register', {
+export function fetchRegister(data: RegisterPayload): Promise<{ message: string }> {
+  return http.post('/auth/register', {
     ...data,
   })
 }

@@ -4,7 +4,7 @@ const isVisible = ref(false)
 const text = ref('')
 const color = ref<'success' | 'error' | 'warning' | 'info'>('success')
 const timeout = ref(1000)
-const location = ref<'top right'>('top right')
+const location = ref<'top right' | 'top center'>('top right')
 
 export function useSnackbar() {
   const show = (

@@ -151,6 +151,7 @@ import noDataUrl from '@/assets/no-data.svg'
 import router from '@/router'
 import { RouteNames } from '@/router/const'
 import type { CreateOrderPayload } from '@/api/types'
+import type { VForm } from 'vuetify/components'
 
 const theads = ['', '商品名稱', '優惠價', '數量', '小計', '庫存', '']
 
@@ -207,7 +208,7 @@ const shippingMethods = [
 ]
 
 const valid = ref(false)
-const form = ref()
+const form = ref<VForm | null>(null)
 
 const formData = reactive({
   shippingAddress: '',
@@ -223,7 +224,7 @@ const rules = {
 }
 
 const handleSubmit = async () => {
-  const { valid } = await form.value.validate()
+  const { valid } = await form.value!.validate()
   if (!valid) {
     snackbar.show('請檢查表單是否正確', 'error')
     return
@@ -243,8 +244,7 @@ const handleSubmit = async () => {
       await cartStore.createOrder(createOrderPayload)
       snackbar.show('訂購成功', 'success', 3000)
       clearCart()
-    } catch (error) {
-      console.error(error)
+    } catch {
       snackbar.show('訂購失敗，請稍後再試', 'error', 3000)
       await loadCartItems()
     }
