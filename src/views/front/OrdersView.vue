@@ -12,7 +12,7 @@
         overflow: hidden;
       "
     >
-      <thead>
+      <thead class="orders-table-header">
         <tr>
           <th v-for="(thead, index) in theads" :key="index" class="text-center">
             {{ thead }}
@@ -28,7 +28,12 @@
           </td>
         </tr>
         <!-- 如果 cartItems 有內容，顯示正常的商品列表 -->
-        <tr v-for="(item, id) in items" :key="id" class="text-center" @click="openItem(item.id)">
+        <tr
+          v-for="(item, id) in items"
+          :key="id"
+          class="text-center"
+          @click="handleViewDetails(item.id)"
+        >
           <td>
             {{ item.orderNumber }}
           </td>
@@ -79,13 +84,16 @@
     ></v-pagination>
 
     <!-- Modal（根據路由決定是否打開）-->
-    <OrderDetailDialog v-model:active="isModalOpen"></OrderDetailDialog>
+    <OrderDetailDialog
+      v-model:active="isModalOpen"
+      v-model:order-detail="orderDetail"
+    ></OrderDetailDialog>
   </v-container>
 </template>
 
 <script setup lang="ts">
 import noDataUrl from '@/assets/no-data.svg'
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import OrderDetailDialog from '@/components/OrderDetailDialog.vue'
 import { useOrdersStore } from '@/stores/orders'
 import { scrollToTop } from '@/utils/ScrollUtils'
@@ -100,10 +108,11 @@ import StatusIconWithTooltip from '@/components/StatusIconWithTooltip.vue'
 
 const isModalOpen = ref(false)
 const ordersStore = useOrdersStore()
-const { getOrders } = ordersStore
+const { getOrders, getOrderDetailById } = ordersStore
 const items = computed(() => ordersStore.orders)
 const currentPage = computed(() => ordersStore.pagination.page)
 const totalPages = computed(() => ordersStore.pagination.totalPages)
+const orderDetail = computed(() => ordersStore.orderDetail)
 
 const theads = [
   '訂單編號',
@@ -115,7 +124,9 @@ const theads = [
   '訂單成立時間',
 ]
 
-const openItem = (id: number) => {
+const handleViewDetails = async (id: number | string) => {
+  await getOrderDetailById(id)
+  await nextTick()
   isModalOpen.value = true
 }
 
@@ -156,17 +167,8 @@ onMounted(async () => {
   background-color: #eef6fc;
 }
 
-.v-table.v-table--fixed-header > .v-table__wrapper > table > thead.cart-table-header > tr > th {
-  background-color: #e4e4e4; /* 表頭明顯的淺藍色 */
+.v-table.v-table--fixed-header > .v-table__wrapper > table > thead.orders-table-header > tr > th {
+  background-color: #e4e4e4;
   color: #2a2a2a;
-}
-
-.link-text {
-  text-decoration: none;
-  cursor: pointer; /* 顯示手勢圖標 */
-}
-
-.link-text:hover {
-  text-decoration: underline; /* hover 時顯示底線 */
 }
 </style>

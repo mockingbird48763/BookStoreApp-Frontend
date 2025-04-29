@@ -1,4 +1,7 @@
-import type { OrderStatus, PaymentMethod, PaymentStatus, ShippingMethod } from './enums'
+import type { OrderStatus } from './enums/OrderStatus'
+import type { PaymentMethod } from './enums/PaymentMethod'
+import type { PaymentStatus } from './enums/PaymentStatus'
+import type { ShippingMethod } from './enums/ShippingMethod'
 
 export interface UserResponse {
   username: string
@@ -107,4 +110,28 @@ export interface OrdersQueryParams {
   shippingMethod?: ShippingMethod
   startDate?: string
   endDate?: string
+}
+
+export interface OrderDetail {
+  id: number
+  orderNumber: string
+  totalPrice: number
+  orderStatus: number
+  paymentStatus: number
+  paymentMethod: number
+  shippingMethod: number
+  shippingAddress: string
+  shippingNote: string
+  createdAt: string
+  memberId: number
+  memberEmail: string
+  orderDetailItems: OrderDetailItem[]
+}
+
+export interface OrderDetailItem {
+  id: number
+  unitPrice: number
+  quantity: number
+  bookId: number
+  bookName: string
 }

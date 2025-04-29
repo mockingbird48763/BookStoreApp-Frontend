@@ -1,5 +1,5 @@
 import { http } from './http'
-import type { CreateOrderPayload, OrderListResponse, OrdersQueryParams } from './types'
+import type { CreateOrderPayload, OrderDetail, OrderListResponse, OrdersQueryParams } from './types'
 
 // GET /orders
 export function fetchOrders(queryParams?: OrdersQueryParams): Promise<OrderListResponse> {
@@ -8,9 +8,10 @@ export function fetchOrders(queryParams?: OrdersQueryParams): Promise<OrderListR
   })
 }
 
-export function fetchOrder(id: string) {
-  return id
-} // GET /orders/{id}
+// GET /orders/{id}
+export function fetchOrderById(id: number | string): Promise<OrderDetail> {
+  return http.get(`/orders/${id}`)
+}
 
 // POST /orders
 export function fetchCreateOrder(payload: CreateOrderPayload) {

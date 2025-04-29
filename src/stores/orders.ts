@@ -1,10 +1,11 @@
-import { fetchOrders } from '@/api'
-import type { OrderListResponse, OrdersQueryParams, OrderSummary } from '@/api/types'
+import { fetchOrderById, fetchOrders } from '@/api'
+import type { OrderDetail, OrderListResponse, OrdersQueryParams, OrderSummary } from '@/api/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useOrdersStore = defineStore('ordersStore', () => {
   const orders = ref<OrderSummary[]>([])
+  const orderDetail = ref<OrderDetail>({} as OrderDetail)
   const pagination = ref({
     totalCount: 0,
     page: 1,
@@ -35,14 +36,16 @@ export const useOrdersStore = defineStore('ordersStore', () => {
     _updatePagination(data)
   }
 
-  // const getOrderDetail = async (id: string | number) => {
-  //   orderDetail.value = await fetchOrderById(id)
-  // }
+  const getOrderDetailById = async (id: number | string) => {
+    const data = await fetchOrderById(id)
+    orderDetail.value = data
+  }
 
   return {
     orders,
+    orderDetail,
     pagination,
     getOrders,
-    // getOrderDetail,
+    getOrderDetailById,
   }
 })
