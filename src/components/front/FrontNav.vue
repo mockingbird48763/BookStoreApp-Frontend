@@ -35,7 +35,7 @@
                 {{ user.email }}
               </p>
               <v-divider class="my-3"></v-divider>
-              <v-btn rounded variant="text"> 後台管理 </v-btn>
+              <v-btn rounded variant="text" @click="goDashboard()"> 後台管理 </v-btn>
               <v-divider class="my-3"></v-divider>
               <v-btn rounded variant="text" @click="goOrders()"> 訂單記錄 </v-btn>
               <v-divider class="my-3"></v-divider>
@@ -101,6 +101,10 @@ const goLogin = async () => {
 
 const goOrders = async () => {
   await router.push({ name: RouteNames.ORDERS })
+}
+
+const goDashboard = async () => {
+  await router.push({ name: RouteNames.DASH_BOARD })
 }
 
 function handleLogout() {

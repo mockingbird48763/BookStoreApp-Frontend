@@ -1,16 +1,15 @@
 <template>
-  <v-container class="d-flex flex-column align-center justify-start" style="min-height: 100vh">
+  <v-container class="d-flex flex-column align-center justify-start"
+    ><v-app-bar border="b" class="ps-4" flat>
+      <v-app-bar-title>過濾器</v-app-bar-title>
+    </v-app-bar></v-container
+  >
+  <v-container class="d-flex flex-column align-center justify-start pt-0" style="min-height: 100vh">
     <v-table
       height="auto"
       fixed-header
       class="elevation-1"
-      style="
-        max-width: 960px;
-        width: 100%;
-        background-color: white;
-        border-radius: 12px;
-        overflow: hidden;
-      "
+      style="width: 100%; background-color: white; border-radius: 12px; overflow: hidden"
     >
       <thead class="orders-table-header">
         <tr>

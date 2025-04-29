@@ -47,7 +47,7 @@ const router = createRouter({
       ],
     },
     {
-      path: '/admin',
+      path: '/dashboard',
       component: BackLayout,
       meta: { requiresAdmin: true },
       children: [
@@ -55,6 +55,16 @@ const router = createRouter({
           path: '',
           component: () => import('@/views/back/DashBoardView.vue'),
           name: RouteNames.DASH_BOARD,
+        },
+        {
+          path: 'books',
+          component: () => import('@/views/back/BookManagementView.vue'),
+          name: RouteNames.BOOK_MANAGEMENT,
+        },
+        {
+          path: 'orders',
+          component: () => import('@/views/back/OrderManagementView.vue'),
+          name: RouteNames.ORDER_MANAGEMENT,
         },
       ],
     },

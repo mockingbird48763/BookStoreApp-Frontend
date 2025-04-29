@@ -7,4 +7,6 @@ export enum RouteNames {
   REGISTER = 'Register',
   ORDERS = 'Orders',
   ORDER_DETAIL = 'OrderDetail',
+  BOOK_MANAGEMENT = 'BookManagement',
+  ORDER_MANAGEMENT = 'OrderManagement',
 }

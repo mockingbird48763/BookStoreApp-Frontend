@@ -1,35 +1,20 @@
 <template>
-  <v-navigation-drawer v-model="drawer">
-    <v-list density="compact" item-props :items="items" nav />
+  <v-navigation-drawer v-model="drawer" :rail="rail" permanent @click="rail = false">
+    <v-list-item :prepend-avatar="fakeAvatar" title="John Leider" nav>
+      <template v-slot:append>
+        <v-btn icon="mdi-chevron-left" variant="text" @click.stop="rail = !rail"></v-btn>
+      </template>
+    </v-list-item>
+
+    <v-divider></v-divider>
+
+    <!-- nav 自動高亮模式 -->
+    <v-list nav density="default" :items="items" item-title="title" item-value="to" item-props />
 
     <template #append>
-      <v-list-item class="ma-2" link nav prepend-icon="mdi-cog-outline" title="Settings" />
+      <v-list-item class="ma-2" link nav prepend-icon="mdi-home-outline" to="/" title="首頁" />
     </template>
   </v-navigation-drawer>
-
-  <v-app-bar border="b" class="ps-4" flat>
-    <v-app-bar-nav-icon v-if="$vuetify.display.smAndDown" @click="drawer = !drawer" />
-
-    <v-app-bar-title>Application</v-app-bar-title>
-
-    <template #append>
-      <v-btn class="text-none me-2" height="48" icon slim>
-        <v-avatar
-          color="surface-light"
-          image="https://cdn.vuetifyjs.com/images/john.png"
-          size="32"
-        />
-
-        <v-menu activator="parent">
-          <v-list density="compact" nav>
-            <v-list-item append-icon="mdi-cog-outline" link title="Settings" />
-
-            <v-list-item append-icon="mdi-logout" link title="Logout" />
-          </v-list>
-        </v-menu>
-      </v-btn>
-    </template>
-  </v-app-bar>
 
   <v-main>
     <v-container fluid>
@@ -43,36 +28,23 @@
 
 <script setup lang="ts">
 import { ref } from 'vue'
+import fakeAvatar from '@/assets/fake-avatar.png'
 
 const drawer = ref(true)
+const rail = ref(true)
 
-const items = ref([
+const items = [
   {
-    title: 'Dashboard',
-    prependIcon: 'mdi-view-dashboard-outline',
-    link: true,
+    title: '書籍管理',
+    prependIcon: 'mdi-book-open-page-variant',
+    to: '/dashboard/books',
   },
   {
-    title: 'Team',
-    prependIcon: 'mdi-account-group',
-    link: true,
+    title: '訂單管理',
+    prependIcon: 'mdi-receipt-text-outline',
+    to: '/dashboard/orders',
   },
-  {
-    title: 'Projects',
-    prependIcon: 'mdi-briefcase-outline',
-    link: true,
-  },
-  {
-    title: 'Calendar',
-    prependIcon: 'mdi-calendar',
-    link: true,
-  },
-  {
-    title: 'Reports',
-    prependIcon: 'mdi-file-chart-outline',
-    link: true,
-  },
-])
+]
 </script>
 
 <style scoped></style>
