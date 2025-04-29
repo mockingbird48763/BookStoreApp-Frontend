@@ -139,11 +139,13 @@ import { fetchLogin, fetchRegister } from '@/api'
 import { useSnackbar } from '@/composables/useSnackbar'
 import router from '@/router'
 import { RouteNames } from '@/router/const'
-import { setToken } from '@/utils/token'
+import { useAuthStore } from '@/stores/auth'
 import { reactive, ref } from 'vue'
 import type { VForm } from 'vuetify/components'
 
 const snackbar = useSnackbar()
+const authStore = useAuthStore()
+const { login } = authStore
 
 const tab = ref('login')
 const visible = ref(false)
@@ -186,7 +188,7 @@ const handleLogin = async () => {
       .then((res) => {
         snackbar.show('登入成功', 'success', 1000, 'top center')
         const token = (res as unknown as { token: string }).token
-        setToken(token)
+        login(token)
         router.push({ name: RouteNames.HOME })
       })
       .catch(() => {

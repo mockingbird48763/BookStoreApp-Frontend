@@ -1,3 +1,5 @@
+import type { OrderStatus, PaymentMethod, PaymentStatus, ShippingMethod } from './enums'
+
 export interface UserResponse {
   username: string
   token: string
@@ -73,4 +75,36 @@ export interface CreateOrderPayload {
   paymentMethod: number
   shippingMethod: number
   shippingNote: string
+}
+
+export interface OrderListResponse {
+  items: OrderSummary[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
+export interface OrderSummary {
+  id: number
+  orderNumber: string
+  totalPrice: number
+  orderStatus: number
+  paymentStatus: number
+  paymentMethod: number
+  shippingMethod: number
+  createdAt: string
+  memberId: number
+}
+
+export interface OrdersQueryParams {
+  page?: number
+  pageSize?: number
+  memberId?: number
+  orderStatus?: OrderStatus
+  paymentStatus?: PaymentStatus
+  paymentMethod?: PaymentMethod
+  shippingMethod?: ShippingMethod
+  startDate?: string
+  endDate?: string
 }
