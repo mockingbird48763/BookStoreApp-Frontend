@@ -125,8 +125,11 @@
 
     <!-- Modal（根據路由決定是否打開）-->
     <OrderDetailDialog
-      v-model:active="isModalOpen"
+      v-model:active="showModal"
       v-model:order-detail="orderDetail"
+      :is-readonly="false"
+      :select-fields="selectFields"
+      @onEdit="handleEditAction"
     ></OrderDetailDialog>
   </v-container>
 </template>
@@ -150,10 +153,12 @@ import {
 import StatusIconWithTooltip from '@/components/StatusIconWithTooltip.vue'
 import { ShippingMethodDetails, createOptionsFromDetails } from '@/api/enums'
 import type { OrdersQueryParams } from '@/api/types'
+import { useSnackbar } from '@/composables/useSnackbar'
 
-const isModalOpen = ref(false)
+const showModal = ref(false)
 const ordersStore = useOrdersStore()
-const { getOrders, getOrderDetailById } = ordersStore
+const { getOrders, getOrderDetailById, updateOrderById } = ordersStore
+const sneakbar = useSnackbar()
 const items = computed(() => ordersStore.orders)
 const currentPage = computed(() => ordersStore.pagination.page)
 const totalPages = computed(() => ordersStore.pagination.totalPages)
@@ -205,7 +210,7 @@ const theads = [
 
 const handleViewDetails = async (id: number | string) => {
   await getOrderDetailById(id)
-  isModalOpen.value = true
+  showModal.value = true
 }
 
 const handlePageChange = async (newPage: number) => {
@@ -216,7 +221,7 @@ const handlePageChange = async (newPage: number) => {
 const handleSerach = async () => {
   await getOrders({
     page: 1,
-    ...mapToOrdersQueryParams(orderFilter.value),
+    ...mapToOrdersQueryParams(orderFilter),
   })
   scrollToTop()
 }
@@ -233,19 +238,34 @@ const handleReset = async () => {
   })
 }
 
+const handleEditAction = async () => {
+  try {
+    await updateOrderById(orderDetail.value.id, {
+      orderStatus: orderDetail.value.orderStatus,
+      paymentStatus: orderDetail.value.paymentStatus,
+    })
+    sneakbar.show('修改成功', 'success', 3000)
+    showModal.value = false
+  } catch {
+    sneakbar.show('修改失敗', 'error', 3000)
+  }
+}
+
 const formatDate = (dateStr: string) => {
   return DateUtils.formatDate(dateStr)
 }
 
-const mapToOrdersQueryParams = (filter: typeof orderFilter.value): OrdersQueryParams => {
+const mapToOrdersQueryParams = (filter: typeof orderFilter): OrdersQueryParams => {
+  console.log(filter.value.memberId)
+  console.log(filter.value.orderStatus)
   return {
-    memberId: filter.memberId ? Number(filter.memberId) : undefined,
-    orderStatus: filter.orderStatus || undefined,
-    paymentStatus: filter.paymentStatus || undefined,
-    paymentMethod: filter.paymentMethod || undefined,
-    shippingMethod: filter.shippingMethod || undefined,
-    startDate: filter.startDate || undefined,
-    endDate: filter.endDate || undefined,
+    memberId: filter.value.memberId ? Number(filter.value.memberId) : undefined,
+    orderStatus: filter.value.orderStatus ?? undefined,
+    paymentStatus: filter.value.paymentStatus ?? undefined,
+    paymentMethod: filter.value.paymentMethod ?? undefined,
+    shippingMethod: filter.value.shippingMethod ?? undefined,
+    startDate: filter.value.startDate || undefined,
+    endDate: filter.value.endDate || undefined,
   }
 }
 

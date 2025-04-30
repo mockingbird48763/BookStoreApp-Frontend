@@ -135,3 +135,8 @@ export interface OrderDetailItem {
   bookId: number
   bookName: string
 }
+
+export interface OrderUpdatePayload {
+  orderStatus: number
+  paymentStatus: number
+}

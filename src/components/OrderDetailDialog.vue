@@ -1,9 +1,9 @@
 <template>
   <div class="text-center pa-4">
-    <v-dialog v-model="modelValue" transition="dialog-bottom-transition" fullscreen>
+    <v-dialog v-model="active" transition="dialog-bottom-transition" fullscreen>
       <v-card>
         <v-toolbar>
-          <v-btn icon="mdi-close" @click="modelValue = false"></v-btn>
+          <v-btn icon="mdi-close" @click="active = false"></v-btn>
           <v-toolbar-title>訂單詳細資料</v-toolbar-title>
         </v-toolbar>
 
@@ -69,27 +69,56 @@
                     <!-- 左欄：資訊列表 -->
                     <v-col cols="12" md="6">
                       <div class="info-section">
-                        <div class="info-item">
-                          <span class="label">訂單狀態：</span
-                          >{{ OrderStatusUtils.getLabel(itemDetail.orderStatus) }}
-                        </div>
-                        <div class="info-item">
-                          <span class="label">付款狀態：</span
-                          >{{ PaymentStatusUtils.getLabel(itemDetail.paymentStatus) }}
-                        </div>
-                        <div class="info-item">
-                          <span class="label">付款方式：</span
-                          >{{ PaymentMethodUtils.getLabel(itemDetail.paymentMethod) }}
-                        </div>
-                        <div class="info-item">
-                          <span class="label">配送方式：</span
-                          >{{ ShippingMethodUtils.getLabel(itemDetail.shippingMethod) }}
-                        </div>
+                        <template v-if="props.isReadonly">
+                          <div class="info-item">
+                            <span class="label">訂單狀態：</span
+                            >{{ OrderStatusUtils.getLabel(itemDetail.orderStatus) }}
+                          </div>
+                          <div class="info-item">
+                            <span class="label">付款狀態：</span
+                            >{{ PaymentStatusUtils.getLabel(itemDetail.paymentStatus) }}
+                          </div>
+                          <div class="info-item">
+                            <span class="label">付款方式：</span
+                            >{{ PaymentMethodUtils.getLabel(itemDetail.paymentMethod) }}
+                          </div>
+                          <div class="info-item">
+                            <span class="label">配送方式：</span
+                            >{{ ShippingMethodUtils.getLabel(itemDetail.shippingMethod) }}
+                          </div>
+                        </template>
+                        <template v-else>
+                          <div
+                            v-for="field in selectFields"
+                            :key="field.key"
+                            class="info-item"
+                            style="display: flex; align-items: center"
+                          >
+                            <span class="label" style="margin-right: 10px"
+                              >{{ field.label }}：</span
+                            >
+                            <v-select
+                              density="compact"
+                              :items="field.items"
+                              v-model="itemDetail[field.key as keyof typeof itemDetail]"
+                              item-title="title"
+                              item-value="value"
+                              style="width: 150px; display: flex; align-items: center"
+                              :disabled="
+                                field.key === 'paymentMethod' || field.key === 'shippingMethod'
+                              "
+                            />
+                          </div>
+                        </template>
+
                         <div class="info-item">
                           <span class="label">配送地址：</span>{{ itemDetail.shippingAddress }}
                         </div>
                         <div class="info-item">
                           <span class="label">配送備註：</span>{{ itemDetail.shippingNote }}
+                        </div>
+                        <div class="info-item">
+                          <span class="label">會員編號：</span>{{ itemDetail.memberId }}
                         </div>
                         <div class="info-item">
                           <span class="label">會員信箱：</span>{{ itemDetail.memberEmail }}
@@ -98,10 +127,23 @@
                     </v-col>
 
                     <!-- 右欄：金額 -->
-                    <v-col cols="12" md="6" class="d-flex justify-end align-start">
-                      <div class="amount-section">
+                    <v-col
+                      cols="12"
+                      md="6"
+                      class="d-flex flex-column justify-space-between align-end"
+                    >
+                      <!-- 上半：金額資訊 -->
+                      <div class="amount-section text-right">
                         <div class="amount-label">金額小計</div>
                         <div class="amount-value">NT$ {{ 100 }} 元</div>
+                      </div>
+
+                      <!-- 下半：按鈕 -->
+                      <div v-if="!props.isReadonly" class="mt-4">
+                        <v-btn color="red" size="large" class="me-2" @click="active = false"
+                          >取消</v-btn
+                        >
+                        <v-btn color="primary" size="large" @click="handleEdit">修改</v-btn>
                       </div>
                     </v-col>
                   </v-row>
@@ -124,62 +166,33 @@ import {
   ShippingMethodUtils,
 } from '@/api/enums'
 import type { OrderDetail } from '@/api/types'
+import { type PropType } from 'vue'
 
 const theads = ['商品名稱', '單價', '數量', '商品總額']
 
-const modelValue = defineModel<boolean>('active')
+const active = defineModel<boolean>('active')
 const itemDetail = defineModel<OrderDetail>('order-detail')
-// const itemDetail = {
-//   id: 22,
-//   orderNumber: '20250428_043712_6lmo',
-//   totalPrice: 190,
-//   orderStatus: 0,
-//   paymentStatus: 0,
-//   paymentMethod: 0,
-//   shippingMethod: 0,
-//   shippingAddress: '高雄市',
-//   shippingNote: '',
-//   createdAt: '2025-04-28T04:37:12.4189761',
-//   memberId: 1,
-//   memberEmail: 'admin@example.com',
-//   orderDetailItems: [
-//     {
-//       id: 66,
-//       unitPrice: 95,
-//       quantity: 2,
-//       bookId: 5,
-//       bookName: '深度學習基礎',
-//     },
-//     {
-//       id: 67,
-//       unitPrice: 95,
-//       quantity: 2,
-//       bookId: 5,
-//       bookName: '深度學習基礎',
-//     },
-//     {
-//       id: 68,
-//       unitPrice: 95,
-//       quantity: 2,
-//       bookId: 5,
-//       bookName: '深度學習基礎',
-//     },
-//     {
-//       id: 69,
-//       unitPrice: 95,
-//       quantity: 2,
-//       bookId: 5,
-//       bookName: '深度學習基礎',
-//     },
-//     {
-//       id: 66,
-//       unitPrice: 95,
-//       quantity: 2,
-//       bookId: 5,
-//       bookName: '深度學習基礎',
-//     },
-//   ],
-// }
+const props = defineProps({
+  isReadonly: {
+    type: Boolean,
+    default: true,
+  },
+  selectFields: {
+    type: Array as PropType<
+      {
+        key: string
+        label: string
+        items: { title: string; value: number }[]
+      }[]
+    >,
+    default: () => [],
+  },
+})
+const emit = defineEmits(['onEdit'])
+
+const handleEdit = () => {
+  emit('onEdit')
+}
 
 const formatDate = (dateStr: string) => {
   return DateUtils.formatDate(dateStr)

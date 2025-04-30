@@ -1,5 +1,11 @@
-import { fetchOrderById, fetchOrders } from '@/api'
-import type { OrderDetail, OrderListResponse, OrdersQueryParams, OrderSummary } from '@/api/types'
+import { fetchOrderById, fetchOrders, fetchUpdateOrder } from '@/api'
+import type {
+  OrderDetail,
+  OrderListResponse,
+  OrdersQueryParams,
+  OrderSummary,
+  OrderUpdatePayload,
+} from '@/api/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -47,11 +53,16 @@ export const useOrdersStore = defineStore('ordersStore', () => {
     orderDetail.value = data
   }
 
+  const updateOrderById = async (id: number, payload: OrderUpdatePayload) => {
+    await fetchUpdateOrder(id, payload)
+  }
+
   return {
     orders,
     orderDetail,
     pagination,
     getOrders,
     getOrderDetailById,
+    updateOrderById,
   }
 })

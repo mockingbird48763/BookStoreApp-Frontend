@@ -1,5 +1,11 @@
 import { http } from './http'
-import type { CreateOrderPayload, OrderDetail, OrderListResponse, OrdersQueryParams } from './types'
+import type {
+  CreateOrderPayload,
+  OrderDetail,
+  OrderListResponse,
+  OrdersQueryParams,
+  OrderUpdatePayload,
+} from './types'
 
 // GET /orders
 export function fetchOrders(queryParams?: OrdersQueryParams): Promise<OrderListResponse> {
@@ -18,12 +24,9 @@ export function fetchCreateOrder(payload: CreateOrderPayload) {
   return http.post('/orders', payload)
 }
 
-export function fetchUpdateOrder(id: string, data: OrderUpdatePayload) {
-  return { id, data }
-} // PATCH /orders/{id}
+// PATCH /orders/{id}
+export function fetchUpdateOrder(id: number | string, payload: OrderUpdatePayload) {
+  return http.patch(`/orders/${id}`, payload)
+}
 
 export function fetchOrdereport() {} // GET /order/report
-
-interface OrderUpdatePayload {
-  _: undefined
-}
