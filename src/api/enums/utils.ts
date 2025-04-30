@@ -16,3 +16,13 @@ export const StatusUtils = <T extends number>(details: Record<T, StatusDetail>) 
     },
   }
 }
+
+// 提供 select 使用的 options
+export const createOptionsFromDetails = <T extends Record<number, { label: string }>>(
+  details: T,
+): Array<{ title: string; value: number }> => {
+  return Object.entries(details).map(([key, detail]) => ({
+    title: detail.label,
+    value: Number(key),
+  }))
+}

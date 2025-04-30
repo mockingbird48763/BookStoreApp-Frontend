@@ -21,6 +21,12 @@ export const useOrdersStore = defineStore('ordersStore', () => {
   }
 
   const getOrders = async (externalParams: OrdersQueryParams = {}) => {
+    // 清除空字串或 undefined/null 的欄位
+    const cleanedParams = Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      Object.entries(externalParams).filter(([_, value]) => value !== '' && value != null),
+    ) as OrdersQueryParams
+
     // 確保前端頁面分頁的顯示
     const queryParams: OrdersQueryParams = {
       page: pagination.value.page,
@@ -29,7 +35,7 @@ export const useOrdersStore = defineStore('ordersStore', () => {
 
     const data: OrderListResponse = await fetchOrders({
       ...queryParams,
-      ...externalParams,
+      ...cleanedParams,
     })
 
     orders.value = data.items
