@@ -31,9 +31,23 @@
         </v-col>
       </v-row>
 
-      <v-btn class="mt-2 mr-2" color="primary" @click="handleSerach()">搜尋</v-btn>
+      <v-row class="mt-2">
+        <!-- 左側按鈕 -->
+        <v-col cols="12" sm="6">
+          <v-btn color="primary" class="mr-2" @click="handleSerach()">搜尋</v-btn>
+          <v-btn color="error" @click="handleReset()">重置</v-btn>
+        </v-col>
 
-      <v-btn class="mt-2" color="error" @click="handleReset()">重置</v-btn>
+        <!-- 右側按鈕 -->
+        <v-col cols="12" sm="6" class="d-flex justify-end">
+          <v-tooltip location="top">
+            <template #activator="{ props }">
+              <v-btn v-bind="props" color="success" @click="handleDownloadReport()">下載報表</v-btn>
+            </template>
+            <span>目前僅提供時間範圍過濾</span>
+          </v-tooltip>
+        </v-col>
+      </v-row>
     </v-card>
   </v-container>
   <v-container
@@ -157,7 +171,7 @@ import { useSnackbar } from '@/composables/useSnackbar'
 
 const showModal = ref(false)
 const ordersStore = useOrdersStore()
-const { getOrders, getOrderDetailById, updateOrderById } = ordersStore
+const { getOrders, getOrderDetailById, updateOrderById, downloadOrderReport } = ordersStore
 const sneakbar = useSnackbar()
 const items = computed(() => ordersStore.orders)
 const currentPage = computed(() => ordersStore.pagination.page)
@@ -248,6 +262,14 @@ const handleEditAction = async () => {
     showModal.value = false
   } catch {
     sneakbar.show('修改失敗', 'error', 3000)
+  }
+}
+
+const handleDownloadReport = async () => {
+  try {
+    await downloadOrderReport({ ...mapToOrdersQueryParams(orderFilter) })
+  } catch (error) {
+    sneakbar.show(`下載報表時出錯：${error}`)
   }
 }
 

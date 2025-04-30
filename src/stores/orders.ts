@@ -1,4 +1,4 @@
-import { fetchOrderById, fetchOrders, fetchUpdateOrder } from '@/api'
+import { fetchOrderById, fetchOrderReport, fetchOrders, fetchUpdateOrder } from '@/api'
 import type {
   OrderDetail,
   OrderListResponse,
@@ -57,6 +57,31 @@ export const useOrdersStore = defineStore('ordersStore', () => {
     await fetchUpdateOrder(id, payload)
   }
 
+  const downloadOrderReport = async (payload: OrdersQueryParams = {}) => {
+    const cleanedParams = Object.fromEntries(
+      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+      Object.entries(payload).filter(([_, value]) => value !== '' && value != null),
+    ) as OrdersQueryParams
+    const data = await fetchOrderReport({ ...cleanedParams })
+
+    // 創建一個 URL 來指向 Blob
+    const url = window.URL.createObjectURL(new Blob([data]))
+
+    // 創建一個虛擬的 <a> 標籤
+    const link = document.createElement('a')
+    link.href = url
+
+    // 設置下載文件名（根據需要改變）
+    link.setAttribute('download', 'order_report.csv')
+
+    // 觸發點擊事件，開始下載
+    document.body.appendChild(link)
+    link.click()
+
+    // 清理 URL 對象
+    window.URL.revokeObjectURL(url)
+  }
+
   return {
     orders,
     orderDetail,
@@ -64,5 +89,6 @@ export const useOrdersStore = defineStore('ordersStore', () => {
     getOrders,
     getOrderDetailById,
     updateOrderById,
+    downloadOrderReport,
   }
 })

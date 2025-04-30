@@ -29,4 +29,9 @@ export function fetchUpdateOrder(id: number | string, payload: OrderUpdatePayloa
   return http.patch(`/orders/${id}`, payload)
 }
 
-export function fetchOrdereport() {} // GET /order/report
+// GET /order/report
+export function fetchOrderReport(payload: OrdersQueryParams): Promise<Blob> {
+  return http.post('/orders/report', payload, {
+    responseType: 'blob',
+  })
+}
