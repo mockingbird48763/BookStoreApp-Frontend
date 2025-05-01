@@ -51,7 +51,11 @@
                 </div>
 
                 <v-card-actions class="mt-6 d-flex justify-end">
+                  <v-btn color="green" size="large" variant="flat" @click="goBack()"
+                    >返回上頁</v-btn
+                  >
                   <v-btn
+                    v-if="book.stock > 0"
                     color="primary"
                     size="large"
                     variant="flat"
@@ -59,6 +63,7 @@
                   >
                     加入購物車
                   </v-btn>
+                  <v-btn v-else color="error" size="large" variant="flat" disabled> 完售 </v-btn>
                 </v-card-actions>
               </v-col>
             </v-row>
@@ -77,12 +82,14 @@ import { useBookStore } from '@/stores'
 import { computed, onMounted } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCartStore } from '@/stores'
+import { useRouter } from 'vue-router'
 
 const props = defineProps<{
   id: string
 }>()
 const bookStore = useBookStore()
 const cartStore = useCartStore()
+const router = useRouter()
 const { addToCart } = cartStore
 const snackbar = useSnackbar()
 const book = computed(() => bookStore.bookDetail)
@@ -93,6 +100,10 @@ const handleAddToCart = async (id: number) => {
     snackbar.show('商品已加入', 'warning')
   }
 }
+const goBack = async () => {
+  await router.back()
+}
+
 onMounted(async () => {
   await bookStore.getBookDetail(props.id)
 })
