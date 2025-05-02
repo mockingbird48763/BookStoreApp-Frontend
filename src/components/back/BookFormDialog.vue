@@ -13,7 +13,7 @@
         </v-toolbar>
         <!-- 需要 v-card-text 才能讓表單元素集中 -->
         <v-card-text>
-          <v-form lazy-validation ref="formRef" v-model="formIsValid" @submit.prevent="submitForm">
+          <v-form lazy-validation ref="formRef" v-model="formIsValid">
             <v-row dense>
               <v-col cols="12" sm="6" md="4">
                 <v-text-field
@@ -62,7 +62,7 @@
                   :min="0"
                   v-model="selectedBook.stock"
                   inset
-                  :rules="[rules.required]"
+                  :rules="[rules.requiredForStock]"
                 ></v-number-input>
               </v-col>
             </v-row>
@@ -81,7 +81,7 @@
               <v-col cols="12" sm="6" md="4">
                 <v-select
                   v-model="selectedBook.publisherId"
-                  :items="publisheds"
+                  :items="publishers"
                   item-title="name"
                   item-value="id"
                   label="出版社"
@@ -118,7 +118,7 @@
 
         <v-card-actions>
           <v-btn text @click="visible = false">取消</v-btn>
-          <v-btn color="primary" @click="submitForm">
+          <v-btn color="primary" @click="handleSubmitForm()">
             {{ isEdit ? '更新' : '新增' }}
           </v-btn>
         </v-card-actions>
@@ -128,49 +128,29 @@
 </template>
 
 <script setup lang="ts">
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { useDisplay } from 'vuetify'
 import defaultImage from '@/assets/default-image.png'
 import type { VForm } from 'vuetify/components'
+import type { SelectedBook } from '@/views/back/BookManagementView.vue'
 
 const display = useDisplay()
-
 const visible = defineModel<boolean>('visible', { required: true })
 const isEdit = defineModel<boolean>('isEdit', { required: true })
+const authors = defineModel<{ id: number; name: string }[]>('authors', { required: true })
+const publishers = defineModel<{ id: number; name: string }[]>('publishers', { required: true })
+const selectedBook = defineModel<SelectedBook>('selectedBook', {
+  required: true,
+})
+const emit = defineEmits<{
+  (event: 'submitForm'): void
+}>()
 const formRef = ref<VForm | null>(null)
 const formIsValid = ref(false)
-// const selectedBook = reactive({
-//   isbn: '123-4-567890-000',
-//   title: 'Test Title',
-//   description: 'Test Description',
-//   listPrice: 100,
-//   discount: 79,
-//   stock: 10,
-//   publicationDate: '2023-10-01',
-//   authorId: 1,
-//   publishedId: 1,
-//   imagePath: '/example/20000000_000000_0001.png',
-//   newImagePath: null,
-//   uploadedFile: null,
-// })
-
-const selectedBook = reactive({
-  isbn: '',
-  title: '',
-  description: '',
-  listPrice: 0,
-  discount: 0,
-  stock: 0,
-  publicationDate: '',
-  authorId: undefined,
-  publisherId: undefined,
-  imagePath: '/example/20000000_000000_0001.png',
-  newImagePath: '',
-  uploadedFile: null,
-})
 const fileError = ref('')
 const rules = {
   required: (value: string | number | null | undefined) => !!value || '此欄位為必填',
+  requiredForStock: (value: number) => value > -1 || '庫存必須大於等於 0',
   isValidISBN: (v: string) =>
     /^\d{3}-\d-\d{6}-\d{3}$/.test(v) || 'ISBN 格式錯誤，請輸入 123-4-567890-000',
   fileSize: (file: File) => {
@@ -181,75 +161,55 @@ const rules = {
   },
 }
 
-const authors = [
-  { id: 1, name: 'Author 1' },
-  { id: 2, name: 'Author 2' },
-  { id: 3, name: 'Author 3' },
-  { id: 4, name: 'Author 4' },
-  { id: 5, name: 'Author 5' },
-]
-const publisheds = [
-  { id: 1, name: 'published 1' },
-  { id: 2, name: 'published 2' },
-  { id: 3, name: 'published 3' },
-  { id: 4, name: 'published 4' },
-  { id: 5, name: 'published 5' },
-]
-
 const fileInputRules = computed(() => {
   // 如果 imagePath 存在，則不需要 required 規則
-  return selectedBook.imagePath ? [rules.fileSize] : [rules.required, rules.fileSize]
+  return selectedBook.value.imagePath ? [rules.fileSize] : [rules.required, rules.fileSize]
 })
 
 const previewImage = computed(() => {
-  if (selectedBook.uploadedFile) {
-    return selectedBook.newImagePath || defaultImage
+  if (selectedBook.value.uploadedFile) {
+    return selectedBook.value.newImagePath || defaultImage
   } else {
-    if (selectedBook.imagePath) {
-      return `/images/${selectedBook.imagePath}`
+    if (selectedBook.value.imagePath) {
+      return `/images/${selectedBook.value.imagePath}`
     } else {
       return defaultImage
     }
   }
 })
+
 function clearFile() {
-  selectedBook.uploadedFile = null
-  selectedBook.newImagePath = null
+  selectedBook.value.uploadedFile = null
+  selectedBook.value.newImagePath = ''
 }
 
 function uploadFile(file: File) {
-  // 檢查檔案大小
-  selectedBook.uploadedFile = file
-  selectedBook.newImagePath = URL.createObjectURL(file)
+  selectedBook.value.uploadedFile = file
+  selectedBook.value.newImagePath = URL.createObjectURL(file)
 }
 
-const onFileClearOrChange = (file) => {
+const onFileClearOrChange = (file: File | File[]) => {
   if (!file) {
-    // 使用者按了 X 清除
+    // 使用者按 X 清除
     clearFile()
     return
-  } else {
+  } else if (!Array.isArray(file)) {
     // 使用者選擇了新檔案
     uploadFile(file)
+  } else {
+    // 使用者選擇了多個檔案
+    fileError.value = '只能上傳一個檔案'
   }
 }
 
-const submitForm = async () => {
+const handleSubmitForm = async () => {
   const { valid } = await formRef.value!.validate()
   if (!valid) {
     console.log('表單驗證失敗')
     return
   } else {
     console.log('表單驗證成功')
+    emit('submitForm')
   }
 }
-
-console.log(
-  selectedBook.uploadedFile
-    ? selectedBook.newImagePath || defaultImage
-    : `/images/${selectedBook.imagePath}`,
-)
-console.log('uploadedFile', !!selectedBook.uploadedFile)
-console.log('newImagePath', !!selectedBook.newImagePath)
-console.log('newImagePath|| defaultImage', selectedBook.newImagePath || defaultImage)
 </script>

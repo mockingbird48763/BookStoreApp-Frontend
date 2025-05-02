@@ -129,6 +129,7 @@ export interface OrdersQueryParams {
   shippingMethod?: ShippingMethod
   startDate?: string
   endDate?: string
+  viewAs?: 'admin'
 }
 
 export interface OrderDetail {

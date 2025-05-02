@@ -176,7 +176,7 @@ const { getOrders, getOrderDetailById, updateOrderById, downloadOrderReport } = 
 const sneakbar = useSnackbar()
 const { startLoading, stopLoading } = useGlobalLoading()
 const items = computed(() => ordersStore.orders)
-const currentPage = computed(() => ordersStore.pagination.page)
+const currentPage = ref(ordersStore.pagination.page)
 const totalPages = computed(() => ordersStore.pagination.totalPages)
 const orderDetail = computed(() => ordersStore.orderDetail)
 
@@ -188,6 +188,7 @@ const orderFilter = ref({
   shippingMethod: undefined,
   startDate: undefined,
   endDate: undefined,
+  viewAs: 'admin',
 })
 
 const selectFields = [
@@ -233,7 +234,7 @@ const handleViewDetails = async (id: number | string) => {
 
 const handlePageChange = async (newPage: number) => {
   startLoading()
-  await getOrders({ page: newPage })
+  await getOrders({ page: newPage, viewAs: 'admin' })
   scrollToTop()
   stopLoading()
 }
@@ -257,6 +258,7 @@ const handleReset = async () => {
     shippingMethod: undefined,
     startDate: undefined,
     endDate: undefined,
+    viewAs: 'admin',
   })
 }
 
@@ -302,12 +304,14 @@ const mapToOrdersQueryParams = (filter: typeof orderFilter): OrdersQueryParams =
     shippingMethod: filter.value.shippingMethod ?? undefined,
     startDate: filter.value.startDate || undefined,
     endDate: filter.value.endDate || undefined,
+    viewAs: 'admin',
   }
 }
 
 onMounted(async () => {
   startLoading()
-  await getOrders()
+  currentPage.value = 1
+  await getOrders({ page: 1, viewAs: 'admin' })
   stopLoading()
 })
 </script>

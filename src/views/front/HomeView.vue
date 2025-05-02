@@ -23,8 +23,9 @@ const { startLoading, stopLoading } = useGlobalLoading()
 
 onMounted(async () => {
   startLoading()
-  setKeyword(searchStore.keyword)
-  await getBooks()
+  setKeyword('')
+  currentPage.value = 1
+  await getBooks({ page: 1 })
   stopLoading()
 })
 

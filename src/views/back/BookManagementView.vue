@@ -136,7 +136,15 @@
       @update:model-value="handlePageChange"
       :total-visible="10"
     ></v-pagination>
-    <BookFormDialog v-model:visible="showModel" :is-edit="isEdit"></BookFormDialog>
+    <!-- vue 3.4 語法糖，可以省略與鍵名相同的值 :authors="authors" => :authors -->
+    <BookFormDialog
+      v-model:visible="showModel"
+      :is-edit="isEdit"
+      :authors
+      :publishers
+      :selected-book
+      @submit-form="handleSubmit"
+    ></BookFormDialog>
   </v-container>
 </template>
 
@@ -146,19 +154,61 @@ import noDataUrl from '@/assets/no-data.svg'
 import BookFormDialog from '@/components/back/BookFormDialog.vue'
 import { useBookStore } from '@/stores'
 import { scrollToTop } from '@/utils/ScrollUtils'
-import { computed, onMounted, ref } from 'vue'
+import { computed, onMounted, reactive, ref } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
-const theads = ['書籍編號', '商品圖片', '商品名稱', '售價', '折扣', '優惠價', '庫存', '顯示狀態']
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
+export interface SelectedBook {
+  isbn: string
+  title: string
+  description: string
+  listPrice: number
+  discount: number
+  stock: number
+  publicationDate: string
+  authorId: number | undefined
+  publisherId: number | undefined
+  imagePath: string
+  newImagePath: string
+  uploadedFile: File | null
+}
 
+const theads = ['書籍編號', '商品圖片', '商品名稱', '售價', '折扣', '優惠價', '庫存', '顯示狀態']
 const bookStore = useBookStore()
 const snackbar = useSnackbar()
-const { getAuthors, getPublishers, getBooksForManagement, updateVisibilityBatch } = bookStore
+const { startLoading, stopLoading } = useGlobalLoading()
+const {
+  getAuthors,
+  getPublishers,
+  getBooksForManagement,
+  updateVisibilityBatch,
+  getBookDetail,
+  createBook,
+  updateBook,
+  setKeyword,
+} = bookStore
 const authors = computed(() => bookStore.authors)
 const publishers = computed(() => bookStore.publishers)
 const items = computed(() => bookStore.booksForManagement)
-const currentPage = computed(() => bookStore.pagination.page)
+const currentPage = ref(bookStore.pagination.page)
 const totalPages = computed(() => bookStore.pagination.totalPages)
+const newBook = {
+  isbn: '',
+  title: '',
+  description: '',
+  listPrice: 0,
+  discount: 0,
+  stock: 0,
+  publicationDate: '',
+  authorId: undefined,
+  publisherId: undefined,
+  imagePath: '',
+  newImagePath: '',
+  uploadedFile: null,
+}
+const selectedBook = reactive<SelectedBook>({ ...newBook })
+const bookDetail = computed(() => bookStore.bookDetail)
 
+// 過濾器
 const bookFilter = ref({
   authorId: undefined,
   publisherId: undefined,
@@ -192,56 +242,97 @@ const trackChange = (id: number, isVisible: boolean) => {
 
 // 開啟新增書籍的 dialog
 function openCreateDialog() {
-  isEdit.value = false // 新增時，isEdit 設定為 false 可以用 slectedBook 判斷
-  // selectedBook.value = null // 新增時，選擇的書籍為 null
+  isEdit.value = false
+  Object.assign(selectedBook, newBook)
   showModel.value = true
 }
 
 // 開啟編輯書籍的 dialog
 async function openEditDialog(id: number) {
-  isEdit.value = true // 編輯時，isEdit 設定為 true
-  // const res = await fetch(`/api/books/${book.id}`)
-  // const fullBook = await res.json()
-  // selectedBook.value = fullBook // 設定為選中的書籍資料
+  startLoading()
+  isEdit.value = true
+  Object.assign(selectedBook, newBook)
+  await getBookDetail(id)
+  assignExistingKeys(selectedBook, bookDetail.value!)
   showModel.value = true
+  stopLoading()
 }
 
 // 提交表單（新增或更新）
-async function handleSubmit(bookData) {
-  // const formData = new FormData()
-  // // 將所有表單欄位資料加入 FormData
-  // for (const key in bookData) {
-  //   if (bookData[key] !== null && key !== 'uploadedImage') {
-  //     formData.append(key, bookData[key])
-  //   }
-  // }
-  // // 如果有上傳圖片，將圖片附加到 FormData
-  // if (bookData.uploadedImage) {
-  //   formData.append('UploadedImage', bookData.uploadedImage)
-  // }
-  // // 新增書籍（POST）或編輯書籍（PUT）
-  // if (bookData.id) {
-  //   await fetch(`/api/books/${bookData.id}`, {
-  //     method: 'PUT',
-  //     body: formData,
-  //   })
-  // } else {
-  //   await fetch(`/api/books`, {
-  //     method: 'POST',
-  //     body: formData,
-  //   })
-  // }
-  // // 關閉 dialog 並更新書籍列表
-  // dialogVisible.value = false
-  // // 可在這裡重新獲取書籍列表，或者更新現有的 books 陣列
+async function handleSubmit() {
+  startLoading()
+  const formData = new FormData()
+  if (!isEdit.value) {
+    createBookFormData(formData)
+    try {
+      await createBook(formData)
+      snackbar.show('新增書籍成功', 'success', 3000)
+      showModel.value = false
+    } catch (err) {
+      const error = err as { response?: { data?: { errors?: string[] } } }
+      const reason = error.response?.data?.errors?.[0]
+      if ('ISBN already exists.' == reason) {
+        snackbar.show('新增書籍失敗: ISBN 已存在', 'error', 3000)
+      } else {
+        snackbar.show('新增書籍失敗: 未知原因', 'error', 3000)
+      }
+    }
+  } else {
+    const originalBook = { ...bookDetail.value }
+    let hasBeenModified = false
+    Object.entries(selectedBook).forEach(([key, value]) => {
+      if (value !== originalBook[key as keyof typeof originalBook] && value != null) {
+        if (key !== 'newImagePath') {
+          hasBeenModified = true
+          formData.append(key, String(value))
+          console.log(key, value)
+        }
+      }
+    })
+
+    if (selectedBook.uploadedFile) {
+      formData.append('uploadedImage', selectedBook.uploadedFile)
+    }
+
+    try {
+      if (!hasBeenModified) {
+        snackbar.show('沒有任何變更', 'info', 3000)
+        return
+      }
+      await updateBook(bookDetail.value!.id, formData)
+      snackbar.show('編輯書籍成功', 'success', 3000)
+      showModel.value = false
+    } catch (err) {
+      const error = err as { response?: { data?: { errors?: string[] } } }
+      const reason = error.response?.data?.errors?.[0]
+      if ('ISBN already exists.' == reason) {
+        snackbar.show('編輯書籍失敗: ISBN 已存在', 'error', 3000)
+      } else {
+        snackbar.show('編輯書籍失敗: 未知原因', 'error', 3000)
+      }
+    }
+  }
+  stopLoading()
+}
+const createBookFormData = (formData: FormData) => {
+  formData.append('isbn', selectedBook.isbn)
+  formData.append('title', selectedBook.title)
+  formData.append('description', selectedBook.description)
+  formData.append('listPrice', selectedBook.listPrice.toString())
+  formData.append('discount', selectedBook.discount.toString())
+  formData.append('stock', selectedBook.stock.toString())
+  formData.append('publicationDate', selectedBook.publicationDate)
+  formData.append('authorId', selectedBook.authorId!.toString())
+  formData.append('publisherId', selectedBook.publisherId!.toString())
+  formData.append('uploadedImage', selectedBook.uploadedFile as Blob)
 }
 
 const getDiscountColor = (discount: number): string => {
   const discountPercent = 100 - discount
   if (discountPercent >= 35) return 'red darken-2' // 65折以下
   if (discountPercent >= 25) return 'orange darken-2' // 75~66折
-  if (discountPercent >= 15) return 'yellow darken-2' // 85~76折
-  return 'green darken-2' // 86折以上
+  if (discountPercent >= 15) return 'green darken-2' // 85~76折
+  return 'blue darken-2' // 86折以上
 }
 
 const handleReset = () => {
@@ -253,19 +344,24 @@ const handleReset = () => {
 }
 
 const handleSerach = async () => {
+  startLoading()
   await getBooksForManagement({
     page: 1,
     ...bookFilter.value,
   })
   scrollToTop()
+  stopLoading()
 }
 
 const handlePageChange = async (newPage: number) => {
+  startLoading()
   await getBooksForManagement({ page: newPage })
   scrollToTop()
+  stopLoading()
 }
 
 const handleBatchVisibilityChange = async () => {
+  startLoading()
   const length = modifiedItems.value.length
   if (length <= 0) {
     snackbar.show('請選擇要修改的書籍', 'error')
@@ -278,12 +374,27 @@ const handleBatchVisibilityChange = async () => {
   } catch {
     snackbar.show('修改失敗', 'error', 1000)
   }
+  stopLoading()
+}
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+function assignExistingKeys<T extends object>(target: T, source: Record<string, any>) {
+  Object.keys(target).forEach((key) => {
+    if (key in source) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      ;(target as any)[key] = source[key]
+    }
+  })
 }
 
 onMounted(async () => {
+  startLoading()
   await getAuthors()
   await getPublishers()
-  await getBooksForManagement()
+  currentPage.value = 1
+  setKeyword('')
+  await getBooksForManagement({ page: 1 })
+  stopLoading()
 })
 </script>
 

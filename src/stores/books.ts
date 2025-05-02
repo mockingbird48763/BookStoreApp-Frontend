@@ -3,7 +3,9 @@ import {
   fetchBookById,
   fetchBooks,
   fetchBooksForManagement,
+  fetchCreateBook,
   fetchPublishers,
+  fetchUpdateBook,
   fetchUpdateBookVisibility,
 } from '@/api'
 import type {
@@ -106,6 +108,14 @@ export const useBookStore = defineStore('booksStore', () => {
     await fetchUpdateBookVisibility(payload)
   }
 
+  const createBook = async (formData: FormData) => {
+    await fetchCreateBook(formData)
+  }
+
+  const updateBook = async (id: number, formData: FormData) => {
+    await fetchUpdateBook(id, formData)
+  }
+
   return {
     getBooks,
     books,
@@ -121,5 +131,7 @@ export const useBookStore = defineStore('booksStore', () => {
     getPublishers,
     getBooksForManagement,
     updateVisibilityBatch,
+    createBook,
+    updateBook,
   }
 })

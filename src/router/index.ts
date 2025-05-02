@@ -40,14 +40,6 @@ const router = createRouter({
           meta: { requiredRoles: [UserRole.USER] },
         },
         {
-          // 多餘的路由
-          path: 'orders/:id',
-          component: () => import('@/views/front/OrderDetailView.vue'),
-          name: RouteNames.ORDER_DETAIL,
-          props: true,
-          meta: { requiredRoles: [UserRole.USER] },
-        },
-        {
           path: '/404',
           name: RouteNames.NOT_FOUND,
           component: () => import('@/views/NotFound.vue'),
@@ -64,11 +56,6 @@ const router = createRouter({
       meta: { requiresAdmin: true },
       redirect: { name: RouteNames.BOOK_MANAGEMENT },
       children: [
-        // {
-        //   path: '',
-        //   component: () => import('@/views/back/DashBoardView.vue'),
-        //   name: RouteNames.DASH_BOARD,
-        // },
         {
           path: 'books',
           component: () => import('@/views/back/BookManagementView.vue'),

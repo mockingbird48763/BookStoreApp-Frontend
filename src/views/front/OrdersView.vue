@@ -112,7 +112,7 @@ const ordersStore = useOrdersStore()
 const { startLoading, stopLoading } = useGlobalLoading()
 const { getOrders, getOrderDetailById } = ordersStore
 const items = computed(() => ordersStore.orders)
-const currentPage = computed(() => ordersStore.pagination.page)
+const currentPage = ref(ordersStore.pagination.page)
 const totalPages = computed(() => ordersStore.pagination.totalPages)
 const orderDetail = computed(() => ordersStore.orderDetail)
 
@@ -146,7 +146,8 @@ const formatDate = (dateStr: string) => {
 
 onMounted(async () => {
   startLoading()
-  await getOrders()
+  currentPage.value = 1
+  await getOrders({ page: 1 })
   stopLoading()
 })
 </script>

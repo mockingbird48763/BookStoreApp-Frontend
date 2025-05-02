@@ -52,16 +52,20 @@ export function fetchUpdateBookVisibility(payload: BookVisibilityPayload[]) {
   return http.patch('/books/visibility', payload)
 }
 
-export function fetchCreateBook(data: BookPayload) {
-  return data
-} // POST /books
-export function fetchUpdateBook(id: string, data: BookUpdatePayload) {
-  return { id, data }
-} // PATCH /books/{id}
-
-interface BookPayload {
-  _: undefined
+// POST /books
+export function fetchCreateBook(formData: FormData) {
+  return http.post('/books', formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }
-interface BookUpdatePayload {
-  _: undefined
+
+// PATCH /books
+export function fetchUpdateBook(id: number | string, formData: FormData) {
+  return http.patch(`/books/${id}`, formData, {
+    headers: {
+      'Content-Type': 'multipart/form-data',
+    },
+  })
 }
