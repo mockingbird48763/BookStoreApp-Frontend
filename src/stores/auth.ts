@@ -75,6 +75,9 @@ export const useAuthStore = defineStore('authStore', () => {
 
   const isLoggedIn = computed(() => !!token.value)
   const isAdmin = computed(() => roles.value.includes(UserRole.ADMIN))
+  const hasRole = (requiredRoles: string[]): boolean => {
+    return requiredRoles.some((role) => roles.value.includes(role))
+  }
   const getEmail = () => email.value
   const getRoles = () => roles.value
   const getToken = () => token.value
@@ -85,6 +88,7 @@ export const useAuthStore = defineStore('authStore', () => {
     isLoggedIn,
     isAdmin,
     loadToken,
+    hasRole,
     getEmail,
     getRoles,
     getToken,

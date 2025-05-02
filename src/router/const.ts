@@ -8,4 +8,5 @@ export enum RouteNames {
   ORDER_DETAIL = 'OrderDetail',
   BOOK_MANAGEMENT = 'BookManagement',
   ORDER_MANAGEMENT = 'OrderManagement',
+  NOT_FOUND = 'NotFound',
 }
