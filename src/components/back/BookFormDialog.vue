@@ -80,7 +80,7 @@
               </v-col>
               <v-col cols="12" sm="6" md="4">
                 <v-select
-                  v-model="selectedBook.publishedId"
+                  v-model="selectedBook.publisherId"
                   :items="publisheds"
                   item-title="name"
                   item-value="id"
@@ -162,8 +162,8 @@ const selectedBook = reactive({
   discount: 0,
   stock: 0,
   publicationDate: '',
-  authorId: 0,
-  publishedId: 0,
+  authorId: undefined,
+  publisherId: undefined,
   imagePath: '/example/20000000_000000_0001.png',
   newImagePath: '',
   uploadedFile: null,
@@ -182,7 +182,6 @@ const rules = {
 }
 
 const authors = [
-  { id: 0, name: '請選擇作者' },
   { id: 1, name: 'Author 1' },
   { id: 2, name: 'Author 2' },
   { id: 3, name: 'Author 3' },
@@ -190,7 +189,6 @@ const authors = [
   { id: 5, name: 'Author 5' },
 ]
 const publisheds = [
-  { id: 0, name: '請選擇出版社' },
   { id: 1, name: 'published 1' },
   { id: 2, name: 'published 2' },
   { id: 3, name: 'published 3' },

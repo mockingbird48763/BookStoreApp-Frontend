@@ -9,11 +9,23 @@
       <!-- dense 讓 v-col 上下間距縮小 -->
       <v-row dense>
         <v-col cols="6" sm="4">
-          <v-text-field label="作者編號" v-model="bookFilter.authorId" />
+          <v-select
+            v-model="bookFilter.authorId"
+            :items="authors"
+            item-title="name"
+            item-value="id"
+            label="作者"
+          ></v-select>
         </v-col>
 
         <v-col cols="6" sm="4">
-          <v-text-field label="出版社編號" v-model="bookFilter.publisherId" />
+          <v-select
+            v-model="bookFilter.publisherId"
+            :items="publishers"
+            item-title="name"
+            item-value="id"
+            label="出版社"
+          ></v-select>
         </v-col>
 
         <v-col cols="6" sm="4">
@@ -30,6 +42,9 @@
 
         <!-- 右側按鈕 -->
         <v-col cols="12" sm="6" class="d-flex justify-end">
+          <v-btn color="blue" class="mr-2" @click="handleBatchVisibilityChange()"
+            >批量修改可見度</v-btn
+          >
           <v-btn color="success" @click="openCreateDialog()">新增書籍</v-btn>
         </v-col>
       </v-row>
@@ -97,7 +112,7 @@
           </td>
           <td>
             <v-chip color="pink lighten-4" text-color="red darken-2" small>
-              ${{ Math.round((item.listPrice * item.discount) / 100) }}
+              {{ item.unitPrice }}
             </v-chip>
           </td>
           <td>
@@ -126,102 +141,23 @@
 </template>
 
 <script setup lang="ts">
+import type { BookForManagementSummary } from '@/api/types'
 import noDataUrl from '@/assets/no-data.svg'
 import BookFormDialog from '@/components/back/BookFormDialog.vue'
-import { ref } from 'vue'
+import { useBookStore } from '@/stores'
+import { scrollToTop } from '@/utils/ScrollUtils'
+import { computed, onMounted, ref } from 'vue'
+import { useSnackbar } from '@/composables/useSnackbar'
 const theads = ['書籍編號', '商品圖片', '商品名稱', '售價', '折扣', '優惠價', '庫存', '顯示狀態']
-const items = ref([
-  {
-    id: 1,
-    title: '改善程式效能',
-    listPrice: 550,
-    discount: 15,
-    imagePath: 'example/20000000_000000_0001.png',
-    stock: 3,
-    isVisible: true,
-  },
-  {
-    id: 3,
-    title: '人工智慧應用實務',
-    listPrice: 780,
-    discount: 20,
-    imagePath: 'example/20000000_000000_0003.png',
-    stock: 8,
-    isVisible: true,
-  },
-  {
-    id: 4,
-    title: '大數據與雲端運算',
-    listPrice: 850,
-    discount: 18,
-    imagePath: 'example/20000000_000000_0004.png',
-    stock: 9,
-    isVisible: true,
-  },
-  {
-    id: 5,
-    title: '深度學習基礎',
-    listPrice: 950,
-    discount: 10,
-    imagePath: 'example/20000000_000000_0005.png',
-    stock: 0,
-    isVisible: true,
-  },
-  {
-    id: 6,
-    title: '資料結構與演算法實務',
-    listPrice: 720,
-    discount: 25,
-    imagePath: 'example/20000000_000000_0006.png',
-    stock: 6,
-    isVisible: false,
-  },
-  {
-    id: 7,
-    title: '軟體開發流程管理',
-    listPrice: 620,
-    discount: 30,
-    imagePath: 'example/20000000_000000_0007.png',
-    stock: 7,
-    isVisible: true,
-  },
-  {
-    id: 8,
-    title: '設計模式入門',
-    listPrice: 680,
-    discount: 22,
-    imagePath: 'example/20000000_000000_0008.png',
-    stock: 9,
-    isVisible: true,
-  },
-  {
-    id: 9,
-    title: '資料庫設計實務',
-    listPrice: 590,
-    discount: 18,
-    imagePath: 'example/20000000_000000_0009.png',
-    stock: 12,
-    isVisible: false,
-  },
-  {
-    id: 10,
-    title: '改善程式效能',
-    listPrice: 550,
-    discount: 15,
-    imagePath: 'example/20000000_000000_0010.png',
-    stock: 45,
-    isVisible: true,
-  },
-  {
-    id: 11,
-    title: '網頁前端開發實戰',
-    listPrice: 750,
-    discount: 27,
-    imagePath: 'example/20000000_000000_0011.png',
-    stock: 0,
-    isVisible: true,
-  },
-])
+
+const bookStore = useBookStore()
+const snackbar = useSnackbar()
+const { getAuthors, getPublishers, getBooksForManagement, updateVisibilityBatch } = bookStore
+const authors = computed(() => bookStore.authors)
+const publishers = computed(() => bookStore.publishers)
+const items = computed(() => bookStore.booksForManagement)
+const currentPage = computed(() => bookStore.pagination.page)
+const totalPages = computed(() => bookStore.pagination.totalPages)
 
 const bookFilter = ref({
   authorId: undefined,
@@ -234,25 +170,23 @@ const showModel = ref(false)
 const isEdit = ref(false)
 
 // 可見度匹量修改追蹤
-const modifiedItems = ref([])
-const currentPage = ref(1)
-const totalPages = ref(3)
+const modifiedItems = ref<{ bookId: number; isVisible: boolean }[]>([])
 
-const toggleVisibility = (item) => {
+// 眼睛圖示的顯示狀態
+const toggleVisibility = (item: BookForManagementSummary) => {
   item.isVisible = !item.isVisible
-  trackChange(item)
+  trackChange(item.id, item.isVisible)
 }
+
 // 追蹤修改的項目
-const trackChange = (item) => {
-  const original = items.value.find((i) => i.id === item.id)
-  if (original && item.isVisible !== original.isVisible) {
-    const existing = modifiedItems.value.find((i) => i.id === item.id)
-    if (!existing) {
-      modifiedItems.value.push({ ...item })
-    }
+const trackChange = (id: number, isVisible: boolean) => {
+  const index = modifiedItems.value.findIndex((item) => item.bookId === id)
+  if (index === -1) {
+    // 不存在就加入
+    modifiedItems.value.push({ bookId: id, isVisible: isVisible })
   } else {
-    // 若改回來了就從修改清單移除
-    modifiedItems.value = modifiedItems.value.filter((i) => i.id !== item.id)
+    // 存在就移除
+    modifiedItems.value.splice(index, 1)
   }
 }
 
@@ -302,11 +236,55 @@ async function handleSubmit(bookData) {
   // // 可在這裡重新獲取書籍列表，或者更新現有的 books 陣列
 }
 
-const getDiscountColor = (discount: number) => {
-  if (discount >= 30) return 'green'
-  if (discount <= 10) return 'red'
-  return 'blue-grey'
+const getDiscountColor = (discount: number): string => {
+  const discountPercent = 100 - discount
+  if (discountPercent >= 35) return 'red darken-2' // 65折以下
+  if (discountPercent >= 25) return 'orange darken-2' // 75~66折
+  if (discountPercent >= 15) return 'yellow darken-2' // 85~76折
+  return 'green darken-2' // 86折以上
 }
+
+const handleReset = () => {
+  bookFilter.value = {
+    authorId: undefined,
+    publisherId: undefined,
+    keyword: undefined,
+  }
+}
+
+const handleSerach = async () => {
+  await getBooksForManagement({
+    page: 1,
+    ...bookFilter.value,
+  })
+  scrollToTop()
+}
+
+const handlePageChange = async (newPage: number) => {
+  await getBooksForManagement({ page: newPage })
+  scrollToTop()
+}
+
+const handleBatchVisibilityChange = async () => {
+  const length = modifiedItems.value.length
+  if (length <= 0) {
+    snackbar.show('請選擇要修改的書籍', 'error')
+    return
+  }
+  try {
+    await updateVisibilityBatch(modifiedItems.value)
+    modifiedItems.value = []
+    snackbar.show(`修改 ${length} 筆成功`, 'success', 1000)
+  } catch {
+    snackbar.show('修改失敗', 'error', 1000)
+  }
+}
+
+onMounted(async () => {
+  await getAuthors()
+  await getPublishers()
+  await getBooksForManagement()
+})
 </script>
 
 <style scoped>

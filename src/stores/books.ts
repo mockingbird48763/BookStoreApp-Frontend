@@ -1,10 +1,30 @@
-import { fetchBookById, fetchBooks } from '@/api'
-import type { BookDetail, BookListResponse, BooksQueryParams, BookSummary } from '@/api/types'
+import {
+  fetchAuthors,
+  fetchBookById,
+  fetchBooks,
+  fetchBooksForManagement,
+  fetchPublishers,
+  fetchUpdateBookVisibility,
+} from '@/api'
+import type {
+  BookDetail,
+  BookListResponse,
+  BooksQueryParams,
+  BookSummary,
+  Author,
+  Publisher,
+  BookListForManagementResponse,
+  BookForManagementSummary,
+  BookVisibilityPayload,
+} from '@/api/types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
 export const useBookStore = defineStore('booksStore', () => {
   const books = ref<BookSummary[]>([])
+  const booksForManagement = ref<BookForManagementSummary[]>([])
+  const authors = ref<Author[]>([])
+  const publishers = ref<Publisher[]>([])
   const _keyword = ref('')
   const pagination = ref({
     totalCount: 0,
@@ -40,6 +60,16 @@ export const useBookStore = defineStore('booksStore', () => {
     _updatePagination(data)
   }
 
+  const getAuthors = async () => {
+    const data: Author[] = await fetchAuthors()
+    authors.value = data
+  }
+
+  const getPublishers = async () => {
+    const data: Publisher[] = await fetchPublishers()
+    publishers.value = data
+  }
+
   const setKeyword = (newKeyword: string) => {
     _keyword.value = newKeyword
   }
@@ -53,13 +83,43 @@ export const useBookStore = defineStore('booksStore', () => {
     bookDetail.value = await fetchBookById(id)
   }
 
+  const getBooksForManagement = async (externalParams: BooksQueryParams = {}) => {
+    const queryParams: BooksQueryParams = {
+      page: pagination.value.page,
+      pageSize: pagination.value.pageSize,
+    }
+
+    if (_keyword.value.trim()) {
+      queryParams.keyword = _keyword.value
+    }
+
+    const data: BookListForManagementResponse = await fetchBooksForManagement({
+      ...queryParams,
+      ...externalParams,
+    })
+
+    booksForManagement.value = data.items
+    _updatePagination(data)
+  }
+
+  const updateVisibilityBatch = async (payload: BookVisibilityPayload[]) => {
+    await fetchUpdateBookVisibility(payload)
+  }
+
   return {
     getBooks,
     books,
+    booksForManagement,
+    authors,
+    publishers,
     pagination,
     setKeyword,
     resetBooks,
     getBookDetail,
     bookDetail,
+    getAuthors,
+    getPublishers,
+    getBooksForManagement,
+    updateVisibilityBatch,
   }
 })

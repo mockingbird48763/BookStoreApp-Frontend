@@ -40,12 +40,31 @@ export interface BookListResponse {
   totalPages: number
 }
 
+export interface BookListForManagementResponse {
+  items: BookForManagementSummary[]
+  totalCount: number
+  page: number
+  pageSize: number
+  totalPages: number
+}
+
 export interface BookSummary {
   id: number
   title: string
   listPrice: number
   discount: number
   imagePath: string
+}
+
+export interface BookForManagementSummary {
+  id: number
+  imagePath: string
+  title: string
+  listPrice: number
+  discount: number
+  unitPrice: number
+  stock: number
+  isVisible: boolean
 }
 
 export interface BookDetail {
@@ -139,4 +158,19 @@ export interface OrderDetailItem {
 export interface OrderUpdatePayload {
   orderStatus: number
   paymentStatus: number
+}
+
+export interface Author {
+  id: number
+  name: string
+}
+
+export interface Publisher {
+  id: number
+  name: string
+}
+
+export interface BookVisibilityPayload {
+  bookId: number
+  isVisible: boolean
 }
