@@ -83,12 +83,14 @@ import { computed, onMounted } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useCartStore } from '@/stores'
 import { useRouter } from 'vue-router'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
 const props = defineProps<{
   id: string
 }>()
 const bookStore = useBookStore()
 const cartStore = useCartStore()
+const { startLoading, stopLoading } = useGlobalLoading()
 const router = useRouter()
 const { addToCart } = cartStore
 const snackbar = useSnackbar()
@@ -105,7 +107,9 @@ const goBack = async () => {
 }
 
 onMounted(async () => {
+  startLoading()
   await bookStore.getBookDetail(props.id)
+  stopLoading()
 })
 </script>
 

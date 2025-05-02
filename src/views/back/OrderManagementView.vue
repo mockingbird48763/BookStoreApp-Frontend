@@ -168,11 +168,13 @@ import StatusIconWithTooltip from '@/components/StatusIconWithTooltip.vue'
 import { ShippingMethodDetails, createOptionsFromDetails } from '@/api/enums'
 import type { OrdersQueryParams } from '@/api/types'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
 const showModal = ref(false)
 const ordersStore = useOrdersStore()
 const { getOrders, getOrderDetailById, updateOrderById, downloadOrderReport } = ordersStore
 const sneakbar = useSnackbar()
+const { startLoading, stopLoading } = useGlobalLoading()
 const items = computed(() => ordersStore.orders)
 const currentPage = computed(() => ordersStore.pagination.page)
 const totalPages = computed(() => ordersStore.pagination.totalPages)
@@ -223,21 +225,27 @@ const theads = [
 ]
 
 const handleViewDetails = async (id: number | string) => {
+  startLoading()
   await getOrderDetailById(id)
   showModal.value = true
+  stopLoading()
 }
 
 const handlePageChange = async (newPage: number) => {
+  startLoading()
   await getOrders({ page: newPage })
   scrollToTop()
+  stopLoading()
 }
 
 const handleSerach = async () => {
+  startLoading()
   await getOrders({
     page: 1,
     ...mapToOrdersQueryParams(orderFilter),
   })
   scrollToTop()
+  stopLoading()
 }
 
 const handleReset = async () => {
@@ -254,6 +262,7 @@ const handleReset = async () => {
 
 const handleEditAction = async () => {
   try {
+    startLoading()
     await updateOrderById(orderDetail.value.id, {
       orderStatus: orderDetail.value.orderStatus,
       paymentStatus: orderDetail.value.paymentStatus,
@@ -262,14 +271,19 @@ const handleEditAction = async () => {
     showModal.value = false
   } catch {
     sneakbar.show('修改失敗', 'error', 3000)
+  } finally {
+    stopLoading()
   }
 }
 
 const handleDownloadReport = async () => {
   try {
+    startLoading()
     await downloadOrderReport({ ...mapToOrdersQueryParams(orderFilter) })
   } catch (error) {
     sneakbar.show(`下載報表時出錯：${error}`)
+  } finally {
+    stopLoading()
   }
 }
 
@@ -292,7 +306,9 @@ const mapToOrdersQueryParams = (filter: typeof orderFilter): OrdersQueryParams =
 }
 
 onMounted(async () => {
+  startLoading()
   await getOrders()
+  stopLoading()
 })
 </script>
 

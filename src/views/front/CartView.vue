@@ -152,11 +152,13 @@ import router from '@/router'
 import { RouteNames } from '@/router/const'
 import type { CreateOrderPayload } from '@/api/types'
 import type { VForm } from 'vuetify/components'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
 const theads = ['', '商品名稱', '優惠價', '數量', '小計', '庫存', '']
 
 const cartStore = useCartStore()
 const snackbar = useSnackbar()
+const { startLoading, stopLoading } = useGlobalLoading()
 const { loadCartItems, removeFromCart, clearCart } = cartStore
 // computed 不可以解構，需要直接使用 store 獲取，保持 ref
 const cartItems = computed(() => cartStore.cartItems)
@@ -166,7 +168,9 @@ const totalItems = computed(() => cartStore.totalItems)
 const totalAmount = computed(() => cartStore.totalAmount)
 
 onMounted(async () => {
+  startLoading()
   await loadCartItems()
+  stopLoading()
 })
 
 const handleDelete = (id: number) => {
@@ -241,12 +245,15 @@ const handleSubmit = async () => {
       orderItems,
     }
     try {
+      startLoading()
       await cartStore.createOrder(createOrderPayload)
       snackbar.show('訂購成功', 'success', 3000)
       clearCart()
     } catch {
       snackbar.show('訂購失敗，請稍後再試', 'error', 3000)
       await loadCartItems()
+    } finally {
+      stopLoading()
     }
   }
 }

@@ -2,16 +2,22 @@
 import { RouterView } from 'vue-router'
 import { useSnackbar } from './composables/useSnackbar'
 import { useAuthStore } from '@/stores/auth'
+import { onMounted, watchEffect } from 'vue'
+import FullScreenLoader from './components/FullScreenLoader.vue'
+import { useGlobalLoading } from './composables/useGlobalLoading'
 
 const snackbar = useSnackbar()
 const authStore = useAuthStore()
-
-// 一進來就從 localStorage 把 token 讀回來
-authStore.loadToken()
+const globalLoading = useGlobalLoading()
+onMounted(() => {
+  authStore.loadToken()
+})
+watchEffect(() => {})
 </script>
 
 <template>
   <v-app>
+    <FullScreenLoader :modelValue="globalLoading.loading.value" />
     <v-snackbar
       v-model="snackbar.isVisible.value"
       :color="snackbar.color.value"

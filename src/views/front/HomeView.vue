@@ -5,6 +5,7 @@ import NoDataFound from '@/components/NoDataFound.vue'
 import { computed, onMounted, ref, watch } from 'vue'
 import { useBookStore, useCartStore, useSearchStore } from '@/stores'
 import { useSnackbar } from '@/composables/useSnackbar'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
 const bookStore = useBookStore()
 const cartStore = useCartStore()
@@ -18,16 +19,21 @@ const { addToCart } = cartStore
 
 // 滾動到頁面頂部
 const scrollToTop = () => window.scrollTo({ top: 0 })
+const { startLoading, stopLoading } = useGlobalLoading()
 
 onMounted(async () => {
+  startLoading()
   setKeyword(searchStore.keyword)
   await getBooks()
+  stopLoading()
 })
 
 const handlePageChange = async (newPage: number) => {
+  startLoading()
   // 底層自動幫忙改變 currentPage
   await getBooks({ page: newPage })
   scrollToTop()
+  stopLoading()
 }
 
 const handleAddToCart = (id: number) => {

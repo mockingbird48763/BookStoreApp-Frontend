@@ -93,7 +93,7 @@
 
 <script setup lang="ts">
 import noDataUrl from '@/assets/no-data.svg'
-import { computed, nextTick, onMounted, ref } from 'vue'
+import { computed, onMounted, ref } from 'vue'
 import OrderDetailDialog from '@/components/OrderDetailDialog.vue'
 import { useOrdersStore } from '@/stores/orders'
 import { scrollToTop } from '@/utils/ScrollUtils'
@@ -105,9 +105,11 @@ import {
   ShippingMethodUtils,
 } from '@/api/enums'
 import StatusIconWithTooltip from '@/components/StatusIconWithTooltip.vue'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
 const isModalOpen = ref(false)
 const ordersStore = useOrdersStore()
+const { startLoading, stopLoading } = useGlobalLoading()
 const { getOrders, getOrderDetailById } = ordersStore
 const items = computed(() => ordersStore.orders)
 const currentPage = computed(() => ordersStore.pagination.page)
@@ -125,14 +127,17 @@ const theads = [
 ]
 
 const handleViewDetails = async (id: number | string) => {
+  startLoading()
   await getOrderDetailById(id)
-  await nextTick()
   isModalOpen.value = true
+  stopLoading()
 }
 
 const handlePageChange = async (newPage: number) => {
+  startLoading()
   await getOrders({ page: newPage })
   scrollToTop()
+  stopLoading()
 }
 
 const formatDate = (dateStr: string) => {
@@ -140,7 +145,9 @@ const formatDate = (dateStr: string) => {
 }
 
 onMounted(async () => {
+  startLoading()
   await getOrders()
+  stopLoading()
 })
 </script>
 

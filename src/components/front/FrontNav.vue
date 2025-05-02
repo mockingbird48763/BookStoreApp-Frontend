@@ -32,11 +32,13 @@
           <v-card-text>
             <div class="mx-auto text-center">
               <p class="text-caption mt-1">
-                {{ user.email }}
+                {{ getEmail() }}
               </p>
               <v-divider class="my-3"></v-divider>
-              <v-btn rounded variant="text" @click="goDashboard()"> 後台管理 </v-btn>
-              <v-divider class="my-3"></v-divider>
+              <template v-if="isAdmin">
+                <v-btn rounded variant="text" @click="goDashboard()"> 後台管理 </v-btn>
+                <v-divider class="my-3"></v-divider>
+              </template>
               <v-btn rounded variant="text" @click="goOrders()"> 訂單記錄 </v-btn>
               <v-divider class="my-3"></v-divider>
               <v-btn rounded variant="text" @click="handleLogout()"> 登出 </v-btn>
@@ -46,14 +48,14 @@
       </v-menu>
     </template>
     <template v-else>
-      <v-btn class="mx-3" @click="goLogin()"> 登入 </v-btn>
+      <v-btn @click="goLogin()"> 登入 </v-btn>
     </template>
   </v-app-bar>
 </template>
 
 <script setup lang="ts">
 import { RouteNames } from '@/router/const'
-import { computed, ref } from 'vue'
+import { computed, ref, watch } from 'vue'
 import { useRouter } from 'vue-router'
 import { useSnackbar } from '@/composables/useSnackbar'
 import { useAuthStore } from '@/stores/auth'
@@ -61,14 +63,9 @@ import { useAuthStore } from '@/stores/auth'
 const router = useRouter()
 const snackbar = useSnackbar()
 const authStore = useAuthStore()
-const { logout } = authStore
+const { logout, getEmail } = authStore
 const isLoggedIn = computed(() => authStore.isLoggedIn)
-
-const user = {
-  initials: 'JD',
-  fullName: 'John Doe',
-  email: 'john.doe@doe.com',
-}
+const isAdmin = computed(() => authStore.isAdmin)
 
 const keyword = ref('')
 const emit = defineEmits<{
@@ -104,14 +101,18 @@ const goOrders = async () => {
 }
 
 const goDashboard = async () => {
-  await router.push({ name: RouteNames.DASH_BOARD })
+  await router.push({ name: RouteNames.BOOK_MANAGEMENT })
 }
 
-function handleLogout() {
+async function handleLogout() {
   logout()
-  router.push({ name: RouteNames.HOME })
+  await router.push({ name: RouteNames.HOME })
   snackbar.show('你已成功登出', 'success', 3000)
 }
+
+watch(isAdmin, (newVal) => {
+  console.log('isAdmin changed:', newVal)
+})
 </script>
 
 <style scoped>

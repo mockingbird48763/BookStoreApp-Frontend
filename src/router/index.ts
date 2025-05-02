@@ -29,11 +29,6 @@ const router = createRouter({
           name: RouteNames.LOGIN,
         },
         {
-          path: 'register',
-          component: () => import('@/views/front/RegisterView.vue'),
-          name: RouteNames.REGISTER,
-        },
-        {
           path: 'orders',
           component: () => import('@/views/front/OrdersView.vue'),
           name: RouteNames.ORDERS,
@@ -50,12 +45,13 @@ const router = createRouter({
       path: '/dashboard',
       component: BackLayout,
       meta: { requiresAdmin: true },
+      redirect: { name: RouteNames.BOOK_MANAGEMENT },
       children: [
-        {
-          path: '',
-          component: () => import('@/views/back/DashBoardView.vue'),
-          name: RouteNames.DASH_BOARD,
-        },
+        // {
+        //   path: '',
+        //   component: () => import('@/views/back/DashBoardView.vue'),
+        //   name: RouteNames.DASH_BOARD,
+        // },
         {
           path: 'books',
           component: () => import('@/views/back/BookManagementView.vue'),

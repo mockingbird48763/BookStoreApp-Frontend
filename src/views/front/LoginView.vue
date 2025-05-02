@@ -136,6 +136,7 @@
 
 <script setup lang="ts">
 import { fetchLogin, fetchRegister } from '@/api'
+import { useGlobalLoading } from '@/composables/useGlobalLoading'
 import { useSnackbar } from '@/composables/useSnackbar'
 import router from '@/router'
 import { RouteNames } from '@/router/const'
@@ -145,6 +146,7 @@ import type { VForm } from 'vuetify/components'
 
 const snackbar = useSnackbar()
 const authStore = useAuthStore()
+const { startLoading, stopLoading } = useGlobalLoading()
 const { login } = authStore
 
 const tab = ref('login')
@@ -181,6 +183,7 @@ const handleLogin = async () => {
   if (!valid) {
     snackbar.show('請檢查表單是否正確', 'error', 1000, 'top center')
   } else {
+    startLoading()
     await fetchLogin({
       email: loginFormData.email,
       password: loginFormData.password,
@@ -194,6 +197,9 @@ const handleLogin = async () => {
       .catch(() => {
         snackbar.show('登入失敗', 'error', 1000, 'top center')
       })
+      .finally(() => {
+        stopLoading()
+      })
   }
 }
 
@@ -202,6 +208,7 @@ const handleRegister = async () => {
   if (!valid) {
     snackbar.show('請檢查表單是否正確', 'error', 1000, 'top center')
   } else {
+    startLoading()
     await fetchRegister({ ...registerFormData })
       .then(() => {
         tab.value = 'login'
@@ -210,6 +217,9 @@ const handleRegister = async () => {
       .catch((error) => {
         const message = error.response.data.errors[0]
         snackbar.show(`註冊失敗: ${message}`, 'error', 1000, 'top center')
+      })
+      .finally(() => {
+        stopLoading()
       })
   }
 }
