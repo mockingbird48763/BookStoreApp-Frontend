@@ -268,6 +268,7 @@ async function handleSubmit() {
       await createBook(formData)
       snackbar.show('新增書籍成功', 'success', 3000)
       showModel.value = false
+      await getBooksForManagement({ page: 1 })
     } catch (err) {
       const error = err as { response?: { data?: { errors?: string[] } } }
       const reason = error.response?.data?.errors?.[0]
@@ -302,6 +303,7 @@ async function handleSubmit() {
       await updateBook(bookDetail.value!.id, formData)
       snackbar.show('編輯書籍成功', 'success', 3000)
       showModel.value = false
+      await getBooksForManagement({ page: 1 })
     } catch (err) {
       const error = err as { response?: { data?: { errors?: string[] } } }
       const reason = error.response?.data?.errors?.[0]

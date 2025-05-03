@@ -35,7 +35,7 @@
             </v-row>
 
             <v-row dense>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="6" md="3">
                 <v-number-input
                   label="售價"
                   :max="999999"
@@ -45,7 +45,7 @@
                   :rules="[rules.required]"
                 ></v-number-input>
               </v-col>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="6" md="3">
                 <v-number-input
                   label="折扣(折)"
                   :max="99"
@@ -55,7 +55,7 @@
                   :rules="[rules.required]"
                 ></v-number-input>
               </v-col>
-              <v-col cols="12" sm="6" md="4">
+              <v-col cols="12" sm="6" md="3">
                 <v-number-input
                   label="庫存"
                   :max="999999"
@@ -64,6 +64,9 @@
                   inset
                   :rules="[rules.requiredForStock]"
                 ></v-number-input>
+              </v-col>
+              <v-col cols="12" sm="6" md="3">
+                <v-text-field label="預期優惠價" disabled v-model="expectedDiscountPrice" />
               </v-col>
             </v-row>
 
@@ -176,6 +179,12 @@ const previewImage = computed(() => {
       return defaultImage
     }
   }
+})
+
+const expectedDiscountPrice = computed(() => {
+  const price = selectedBook.value?.listPrice ?? 0
+  const discount = selectedBook.value?.discount ?? 1
+  return (price * (discount / 100)).toFixed(0)
 })
 
 function clearFile() {
