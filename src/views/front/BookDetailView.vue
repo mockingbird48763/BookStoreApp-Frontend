@@ -78,10 +78,9 @@
 </template>
 <script setup lang="ts">
 import NoDataFound from '@/components/NoDataFound.vue'
-import { useBookStore } from '@/stores'
+import { useBookStore, useCartStore } from '@/stores'
 import { computed, onMounted } from 'vue'
 import { useSnackbar } from '@/composables/useSnackbar'
-import { useCartStore } from '@/stores'
 import { useRouter } from 'vue-router'
 import { useGlobalLoading } from '@/composables/useGlobalLoading'
 
