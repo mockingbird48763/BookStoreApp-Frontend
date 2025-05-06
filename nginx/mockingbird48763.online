@@ -1,0 +1,25 @@
+# Vue 應用基礎配置
+root /usr/share/nginx/html;
+index index.html;
+
+# gzip 壓縮
+gzip on;
+gzip_types text/plain text/css application/json application/javascript text/xml application/xml application/xml+rss text/javascript;
+
+# 處理 Vue 路由
+location / {
+    try_files $uri $uri/ /index.html;
+}
+
+# 靜態資源緩存優化
+location ~* \.(js|css|png|jpg|jpeg|gif|ico|svg)$ {
+    expires 1y;
+    add_header Cache-Control "public, no-transform";
+    access_log off;
+}
+
+# 禁止訪問敏感文件
+location ~ /\.(env|git|ht) {
+    deny all;
+    return 404;
+}
