@@ -3,7 +3,10 @@ import { mergeConfig, defineConfig, configDefaults } from 'vitest/config'
 import viteConfig from './vite.config'
 
 export default mergeConfig(
-  viteConfig,
+  // test 環境
+  // command 可以是 serve 或 build
+  // serve 是開發環境，build 是生產環境
+  viteConfig({ mode: 'test', command: 'serve' }), // 加上 command: 'serve'
   defineConfig({
     test: {
       environment: 'jsdom',
