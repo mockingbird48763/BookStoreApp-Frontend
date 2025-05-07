@@ -28,6 +28,7 @@ npm run dev
 - Pinia
 - Vue Router
 - Axios
+- TypeScript
 - Google Cloud Storage
 - Docker
 
