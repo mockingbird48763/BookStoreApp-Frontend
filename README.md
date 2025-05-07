@@ -2,7 +2,7 @@
 
 本倉庫為 BookStore 系統的前端專案，使用 Vue 3 + Vuetify，包含購書流程、訂單管理與後台維護功能。
 
-需搭配後端專案 [BookStoreApp API]([https://github.com/你的帳號/BookStoreApp](https://github.com/mockingbird48763/BookStoreApp)) 使用。
+需搭配後端專案 [BookStoreApp API](https://github.com/mockingbird48763/BookStoreApp) 使用。
 
 ## 🚀 專案啟動
 安裝依賴：
